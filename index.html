@@ -7,24 +7,24 @@
     <link href="styles/main.css" rel="stylesheet" type="text/css">
   </head>
 
-  <body>
-    <div id="contents"></div>
-    
-    <div>
-      <button id="btnRecording000" class="button-record start-recording">start</button>
-    </div>
-    <div>
-      <audio id="recordedAudio000" class="audio-control"> HTML 5 audio control not supported by this browser </audio>
-    </div>
+  <body class="arp-colorscheme">
+    <div id="header" class="arp_header"></div>
+  	<div id="notice" class='arp-notice'></div>
+    <div id="contents">
+      <div class="response-container">
+        <button id="btnRecording000" disabled class="record-control start-recording">start</button>
+        <audio id="recordedAudio000" class="audio-control"> HTML 5 audio control not supported by this browser </audio>
+      </div>
 
-    <div>
-      <button id="btnRecording001" class="button-record start-recording">start</button>
+      <div class="response-container">
+        <button id="btnRecording001" disabled class="record-control start-recording">start</button>
+        <audio id="recordedAudio001" class="audio-control"> HTML 5 audio control not supported by this browser </audio>
+      </div>    
     </div>
-    <div>
-      <audio id="recordedAudio001" class="audio-control"> HTML 5 audio control not supported by this browser </audio>
-    </div>
-
 
     <script src="scripts/main.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', app.init());
+    </script>    
   </body>
 </html>
