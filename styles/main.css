@@ -1,0 +1,14 @@
+.start-recording {
+  background-color: blue;
+  color: white;
+}
+
+.stop-recording {
+  background-color: green;
+  color: black;
+}
+
+.redo-recording {
+  background-color: yellow;
+  color: black;
+}
