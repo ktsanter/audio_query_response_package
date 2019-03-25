@@ -3,17 +3,30 @@
 //
 const app = function () {
 	const page = {};
+
+  const RECORD_SYMBOL = '⏺️';  
+  const PLAY_SYMBOL = '▶️';
+  const PAUSE_SYMBOL = '⏸️';
+  const STOP_SYMBOL = '⏹️';
 	
 	const settings = {
     streamavailable: false,
     mediarecorder: [],
     audiochunks: [],
     mp3blobs: [],
+    recordcontrols: [],
+    audiocontrols: [],
+    playcontrols: [],
     recordbuttonstyling: {
-      'start': {buttontext: 'record', buttonclass: 'start-recording'},
-      'stop': {buttontext: 'stop', buttonclass: 'stop-recording'},
-      'redo': {buttontext: 'redo', buttonclass: 'redo-recording'}
-    }
+      'start': {buttontext: RECORD_SYMBOL, buttonclass: 'start-recording', hovertext: 'start recording'},
+      'stop': {buttontext: STOP_SYMBOL, buttonclass: 'stop-recording', hovertext: 'stop recording'},
+      'redo': {buttontext: RECORD_SYMBOL, buttonclass: 'redo-recording', hovertext: 'redo recording'}
+    },
+    playbuttonstyling: {
+      'play': {buttontext: PLAY_SYMBOL, buttonclass: 'play-audio', hovertext: 'play recording'},
+      'pause': {buttontext: PAUSE_SYMBOL, buttonclass: 'pause-audio', hovertext: 'pause recording'}
+    },
+    recordinginprogress: -1
   };
   
   const config = {  // this should be made from query params
@@ -86,25 +99,41 @@ const app = function () {
   
   function _createItem(index, item) {
     var elemContainer = document.createElement('div');
-    elemContainer.classList.add('response-container');
+    elemContainer.classList.add('item-container');
     
     var elemPrompt = document.createElement('div');
+    elemPrompt.classList.add('item-prompt');
     elemPrompt.innerHTML = item.textprompt;
     elemContainer.appendChild(elemPrompt);
     
+    var elemResponse = document.createElement('div');
+    elemResponse.classList.add('item-response');
     var elemButton = document.createElement('button');
     elemButton.id = _numberElementId('btnRecording', index);
     elemButton.classList.add('record-control');
-    _setRecordButtonStyling(elemButton, 'start');
     elemButton.onclick = e => _recordButtonHandler(e.target);
-    elemContainer.appendChild(elemButton);
+    settings.recordcontrols.push(elemButton);
+    _setRecordButtonStyling(elemButton, 'start');
+    elemResponse.appendChild(elemButton);
     
     var elemAudio = document.createElement('audio');
     elemAudio.id = _numberElementId('recordedAudio', index);
     elemAudio.classList.add('audio-control');
     elemAudio.innerHTML = 'HTML 5 audio control not supported by this browser';
-    elemContainer.appendChild(elemAudio);
+    elemAudio.style.display = 'none';
+    elemAudio.onended = e => _audioEndedHandler(e.target);
+    settings.audiocontrols.push(elemAudio);
+    elemResponse.appendChild(elemAudio);
     
+    var elemPlay = document.createElement('button');
+    elemPlay.id = _numberElementId('btnPlay', index);
+    elemPlay.classList.add('play-control');
+    elemPlay.onclick = e => _playButtonHandler(e.target);
+    settings.playcontrols.push(elemPlay);
+    _setPlayButtonStyling(elemPlay, 'play');
+    elemResponse.appendChild(elemPlay);
+    elemContainer.appendChild(elemResponse);
+        
     return elemContainer;
   }
   
@@ -114,7 +143,7 @@ const app = function () {
     var elemButton = document.createElement('button');
     elemButton.class = 'package-control';
     elemButton.disabled = true;
-    elemButton.innerHTML = 'package';
+    elemButton.innerHTML = 'download';
     elemButton.onclick = e => _packageButtonHandler(e.target);
     
     page.packagebutton = elemButton;
@@ -124,8 +153,20 @@ const app = function () {
   }
 
   function _setRecordButtonStyling(elemTarget, stageName) {
+    var recordButtons = settings.recordcontrols;
+    for (var i = 0; i < recordButtons.length; i++) {
+      var elemButton = recordButtons[i];
+      var elemNumber = _getElementNumber(elemButton);
+      if( settings.recordinginprogress >= 0) {
+        elemButton.disabled = (elemNumber != settings.recordinginprogress);
+      } else {
+        elemButton.disabled = false;
+      }
+    }
+    
     var buttonText = settings.recordbuttonstyling[stageName].buttontext;
     var buttonClass = settings.recordbuttonstyling[stageName].buttonclass;
+    var buttonHoverText = settings.recordbuttonstyling[stageName].hovertext;
     
     for (var prop in settings.recordbuttonstyling) {
       var className = settings.recordbuttonstyling[prop].buttonclass;
@@ -133,10 +174,42 @@ const app = function () {
     }
     elemTarget.innerHTML = buttonText;
     elemTarget.classList.add(buttonClass);
+    elemTarget.title = buttonHoverText;
   }
     
+  function _setPlayButtonStyling(elemTarget, stageName) {
+    var playButtons = settings.playcontrols;
+    for (var i = 0; i < playButtons.length; i++) {
+      var elemButton = playButtons[i];
+      var elemNumber = _getElementNumber(elemButton);
+      if (settings.mp3blobs[i] == null) {
+        elemButton.style.display = 'none';
+      } else {
+        elemButton.style.display = 'inline-block';
+      }
+    }
+    
+    var buttonText = settings.playbuttonstyling[stageName].buttontext;
+    var buttonClass = settings.playbuttonstyling[stageName].buttonclass;
+    var buttonHoverText = settings.playbuttonstyling[stageName].hovertext;
+    
+    for (var prop in settings.playbuttonstyling) {
+      var className = settings.playbuttonstyling[prop].buttonclass;
+      if (elemTarget.classList.contains(className)) elemTarget.classList.remove(className);
+    }
+    elemTarget.innerHTML = buttonText;
+    elemTarget.classList.add(buttonClass);
+    elemTarget.title = buttonHoverText;
+  }
+  
+  function _enablePlayButtons(enable) {
+    for (var i = 0; i < settings.playcontrols.length; i++) {
+      settings.playcontrols[i].disabled = !enable;
+    }
+  }
+
   function _setPackageButtonEnable() {
-    var enable = true;
+    var enable = (settings.recordinginprogress < 0);
     
     for (var i = 0; i < settings.mp3blobs.length && enable; i++) {
       enable = (settings.mp3blobs[i] != null);
@@ -158,7 +231,6 @@ const app = function () {
     settings.streamavailable = true;
     
     for (var i = 0; i < config.items.length; i++) {
-      //var elemAudio = audioElements[i];
       var thisRecorder = new MediaRecorder(stream);
       var thisChunks = [];
       settings.mediarecorder.push(thisRecorder);
@@ -179,7 +251,10 @@ const app = function () {
   function _startRecording(elemTarget) {
     try {
       var elemNumber = _getElementNumber(elemTarget);
+      settings.recordinginprogress = elemNumber;
       _setRecordButtonStyling(elemTarget, 'stop')
+      _enablePlayButtons(false);
+      _setPackageButtonEnable();
       settings.audiochunks[elemNumber] = [];
       settings.mediarecorder[elemNumber].start();
       
@@ -191,6 +266,7 @@ const app = function () {
   function _stopRecording(elemTarget) {
     try {
       var elemNumber = _getElementNumber(elemTarget);
+      settings.recordinginprogress = -1;
       _setRecordButtonStyling(elemTarget, 'redo')
       settings.mediarecorder[elemNumber].stop();
 
@@ -200,7 +276,7 @@ const app = function () {
   }
 
   function _redoRecording(elemTarget) {
-    var prompt = 'There is already a recording for this item.  \nClick "OK" if you would like to make a new one';
+    var prompt = 'There is already a recording for this item.\nClick "OK" if you would like to make a new one';
     if (confirm(prompt)) _startRecording(elemTarget);
   }
 
@@ -218,12 +294,47 @@ const app = function () {
         elemAudio.autoplay=false;
         settings.mp3blobs[index] = blob;
         _setPackageButtonEnable();
+        _enablePlayButtons(true);
+        _setPlayButtonStyling(settings.playcontrols[index], 'play');
       }
     } catch(err) {
       _reportError('_finishRecording', err);
     }
   }
+
+  function _playRecording(elemTarget) {  
+    var elemNumber = _getElementNumber(elemTarget);
+    var mp3blob = settings.mp3blobs[elemNumber];
+    
+    if (mp3blob != null) {
+      var elemAudio = settings.audiocontrols[elemNumber];
+      var stage, nextStage;
+      if (elemTarget.classList.contains(settings.playbuttonstyling.play.buttonclass)) {
+        stage = 'play';
+        nextStage = 'pause';
+      } else {
+        stage = 'pause';
+        nextStage = 'play';
+      }
+
+      if (stage == 'play') {
+        elemAudio.play();
+      } else {
+        elemAudio.pause();
+      }
+      _setPlayButtonStyling(elemTarget, nextStage);
+    }
+  }
   
+  function _audioEnded(elemTarget) {
+    var elemNumber = _getElementNumber(elemTarget);
+    var elemPlayButton = settings.playcontrols[elemNumber];
+    _setPlayButtonStyling(elemPlayButton, 'play');    
+  }
+  
+	//------------------------------------------------------------------
+	// package and download recordings
+	//------------------------------------------------------------------
   function _packageAudioRecordings() {
     var zip = new JSZip();
     
@@ -259,6 +370,14 @@ const app = function () {
   function _packageButtonHandler(elemTarget) {
     _packageAudioRecordings();
   }
+  
+  function _playButtonHandler(elemTarget) {
+    _playRecording(elemTarget);
+  }
+  
+  function _audioEndedHandler(elemTarget) {
+    _audioEnded(elemTarget);
+  }
 
 	//---------------------------------------
 	// utility functions
@@ -268,10 +387,8 @@ const app = function () {
 
 		if (label == '') {
 			page.notice.style.display = 'none'; 
-			page.notice.style.visibility = 'hidden';
 		} else {
 			page.notice.style.display = 'block';
-			page.notice.style.visibility = 'visible';
 		}
 	}
   
