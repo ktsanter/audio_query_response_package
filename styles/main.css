@@ -15,7 +15,7 @@
 
 body {
 	color: var(--MV-black);
-	background-color: var(--MV-white);
+	background-color: var(--MV-green);
 	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 	font-size: 13px;
 	margin-left: 12px;
@@ -41,6 +41,7 @@ body {
 }
 
 .item-container {
+  background-color: var(--MV-white);
   border: 1px solid var(--very-light-gray);
   border-radius: 6px;
   margin-bottom: 8px;
@@ -109,6 +110,11 @@ body {
 }
 
 .package-control {
-  border: 1px solid var(--MV-black);
+  font-size: 20px;
+  border: 1px solid var(--MV-light-gray);
   border-radius: 6px;
+}
+
+.package-control:disabled {
+  background-color: var(--MV-dark-gray);
 }

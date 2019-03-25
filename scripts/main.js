@@ -1,5 +1,5 @@
 //
-// TODO: add delete feature
+// TODO: add config based on Google Web API (query param of google file id)
 //
 const app = function () {
 	const page = {};
@@ -9,6 +9,7 @@ const app = function () {
   const PAUSE_SYMBOL = '⏸️';
   const STOP_SYMBOL = '⏹️';
   const TRASH_SYMBOL = '🗑️';
+  const DOWNLOAD_SYMBOL = '⬇️';
 	
 	const settings = {
     streamavailable: false,
@@ -203,9 +204,9 @@ const app = function () {
     var elemContainer = document.createElement('div');
     
     var elemButton = document.createElement('button');
-    elemButton.class = 'package-control';
+    elemButton.classList.add('package-control');
     elemButton.disabled = true;
-    elemButton.innerHTML = 'download';
+    elemButton.innerHTML = DOWNLOAD_SYMBOL;
     elemButton.title = 'download recordings in a ZIP file - only available once all recordings are completed';    
     elemButton.onclick = e => _packageButtonHandler(e.target);
     
