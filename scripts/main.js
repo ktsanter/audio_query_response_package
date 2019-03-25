@@ -1,5 +1,5 @@
 //
-// TODO: add config based on Google Web API (query param of google file id)
+// TODO: swap order of getting config and configuring audio
 //
 const app = function () {
 	const page = {};
@@ -77,7 +77,8 @@ const app = function () {
 	//-----------------------------------------------------------------------------
 	// page rendering
 	//-----------------------------------------------------------------------------  
-  function _renderPage() {
+  function _renderPage(data) {
+    console.log('data=' + JSON.stringify(data));
     if (settings.streamavailable) {
       page.contents.appendChild(_renderTitle(config.title));
       page.contents.appendChild(_renderInstructions(config.instructions));
@@ -128,7 +129,7 @@ const app = function () {
     var elemContainer = document.createElement('div');
     elemContainer.classList.add('item-prompt');
     
-    if (item.audioprompt != null) {
+    if (item.audioprompt != null && item.audioprompt != '') {
       var elemAudio = document.createElement('audio');
       elemAudio.id = _numberElementId('promptAudio', index);
       elemAudio.classList.add('audioprompt-control');
@@ -146,7 +147,7 @@ const app = function () {
       elemContainer.appendChild(elemPlay);
     }
     
-    if (item.textprompt != null) {
+    if (item.textprompt != null && item.textprompt != '') {
         var elemTextPrompt = document.createElement('span');
         elemTextPrompt.innerHTML = item.textprompt;
         elemContainer.appendChild(elemTextPrompt);
@@ -307,7 +308,7 @@ const app = function () {
     navigator.mediaDevices.getUserMedia({audio:true})
     .then((stream) => _configureAudioControls(stream))
     .catch((err) => _audioConfigureError(err))
-    .then(() =>  _renderPage());
+    .then(() =>  _getConfigData('1a5u8SfLCSpMc1fmgUmIWMWHLz8kesSPbJB-ZdgDwg3s', _reportError, _renderPage));
   }
   
   function _configureAudioControls(stream) {
