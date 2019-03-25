@@ -35,6 +35,11 @@ body {
   font-weight: bold;
 }
 
+.arp-instructions {
+  margin-top: 4px;
+  margin-bottom: 6px;
+}
+
 .item-container {
   border: 1px solid var(--very-light-gray);
   border-radius: 6px;
@@ -49,11 +54,12 @@ body {
 
 .item-prompt {
   float: left;
-  margin-left: 8px;
+  margin-left: 4px;
   margin-top: 2px;
 }
 
 .item-response {
+  clear: left;
   float: right;
 }
 
@@ -61,7 +67,8 @@ body {
   font-size: 20px;
   border: 1px solid var(--MV-light-gray);
   border-radius: 6px;
-  margin-left: 10px;
+  margin-bottom: 2px;
+  margin-right: 2px;
 }
 
 .record-control:disabled {
@@ -82,14 +89,23 @@ body {
 }
 
 .play-control {
+  margin-right: 2px;
+  margin-bottom: 2px;
+}
+
+.play-control, .playprompt-control, .delete-control {
   font-size: 20px;
   border: 1px solid var(--MV-light-gray);
   border-radius: 6px;
   margin-left: 2px;
 }
 
-.play-control:disabled {
+.play-control:disabled, .playprompt-control:disabled {
   background-color: var(--MV-dark-gray);
+}
+
+.playprompt-control {
+  margin-right: 8px;
 }
 
 .package-control {
