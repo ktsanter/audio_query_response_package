@@ -30,6 +30,11 @@ body {
 
 #contents {}
 
+.arp-title {
+  font-size: 14px;
+  font-weight: bold;
+}
+
 .response-container {}
 
 .record-control {
@@ -43,4 +48,9 @@ body {
 
 .audio-control {
   height: 30px;
+}
+
+.package-control {
+  border: 1px solid var(--MV-black);
+  border-radius: 6px;
 }

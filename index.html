@@ -11,17 +11,10 @@
     <div id="header" class="arp_header"></div>
   	<div id="notice" class='arp-notice'></div>
     <div id="contents">
-      <div class="response-container">
-        <button id="btnRecording000" disabled class="record-control start-recording">start</button>
-        <audio id="recordedAudio000" class="audio-control"> HTML 5 audio control not supported by this browser </audio>
-      </div>
+    
 
-      <div class="response-container">
-        <button id="btnRecording001" disabled class="record-control start-recording">start</button>
-        <audio id="recordedAudio001" class="audio-control"> HTML 5 audio control not supported by this browser </audio>
-      </div>    
-    </div>
-
+    <script src="scripts/filesaver.min.js"></script>
+    <script src="scripts/jszip.min.js"></script>
     <script src="scripts/main.js"></script>
     <script>
       document.addEventListener('DOMContentLoaded', app.init());
