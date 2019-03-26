@@ -5,10 +5,15 @@
 // 1a5u8SfLCSpMc1fmgUmIWMWHLz8kesSPbJB-ZdgDwg3s
 // 1dATfMyp4EyRLu3-s3U83sX25nKEmLUxXbJKUk0Nd_jM
 //
-//
 
 const app = function () {
 	const page = {};
+  
+  const AUDIO_MIMETYPE = 'audio/webm';
+  const AUDIO_FILETYPE_EXTENSION_FIREFOX = '.ogg';
+  const AUDIO_FILETYPE_EXTENSION_CHROME = '.webm';
+  
+  const NO_VALUE = '[none]';
 
   const RECORD_SYMBOL = '⏺️';  
   const PLAY_SYMBOL = '▶️';
@@ -137,7 +142,7 @@ const app = function () {
     var elemContainer = document.createElement('div');
     elemContainer.classList.add('item-prompt');
     
-    if (item.audioprompt != null && item.audioprompt != '') {
+    if (item.audioprompt != NO_VALUE && item.audioprompt != null && item.audioprompt != '') {
       var elemAudio = document.createElement('audio');
       elemAudio.id = _numberElementId('promptAudio', index);
       elemAudio.classList.add('audioprompt-control');
@@ -155,7 +160,7 @@ const app = function () {
       elemContainer.appendChild(elemPlay);
     }
     
-    if (item.textprompt != null && item.textprompt != '') {
+    if (item.textprompt != NO_VALUE && item.textprompt != null && item.textprompt != '') {
         var elemTextPrompt = document.createElement('span');
         elemTextPrompt.innerHTML = item.textprompt;
         elemContainer.appendChild(elemTextPrompt);
@@ -326,9 +331,9 @@ const app = function () {
   
   function _configureAudioControls(stream) {
     settings.streamavailable = true;
-
+    
     for (var i = 0; i < config.items.length; i++) {
-      var thisRecorder = new MediaRecorder(stream);
+      var thisRecorder = new MediaRecorder(stream, {mimeType: AUDIO_MIMETYPE});
       var thisChunks = [];
       settings.mediarecorder.push(thisRecorder);
       settings.audiochunks.push(thisChunks);
@@ -396,7 +401,7 @@ const app = function () {
       thisChunks.push(e.data);
 
       if (thisRecorder.state == "inactive"){
-        let blob = new Blob(thisChunks,{type:'audio/mpeg-3'});
+        let blob = new Blob(thisChunks, {type: AUDIO_MIMETYPE} );
         elemAudio.src = URL.createObjectURL(blob);
         elemAudio.controls=true;
         elemAudio.autoplay=false;
@@ -478,8 +483,12 @@ const app = function () {
     
     for (var i = 0; i < settings.mp3blobs.length; i++) {
       var blob = settings.mp3blobs[i];
-      var blobname = _numberElementId('response', (i+1)) + '.mp3';
-      zip.file(blobname, blob, {binary: true});
+
+      var filename1 = _numberElementId('response', (i+1)) + AUDIO_FILETYPE_EXTENSION_CHROME; 
+      var filename2 = _numberElementId('response', (i+1)) + AUDIO_FILETYPE_EXTENSION_FIREFOX; 
+
+      zip.file(filename1, blob);
+      zip.file(filename2, blob);
     }
 
     zip.generateAsync({type:"blob"})
