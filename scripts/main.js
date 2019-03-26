@@ -94,7 +94,7 @@ const app = function () {
       page.contents.appendChild(_renderTitle(config.title));
       page.contents.appendChild(_renderInstructions(config.instructions));
       page.contents.appendChild(_renderItems(config.items));  
-      page.contents.appendChild(_createPackageControl());
+      page.contents.appendChild(_createPackageControl());      
     }
   }
   
@@ -226,8 +226,15 @@ const app = function () {
     elemButton.title = 'download recordings in a ZIP file - only available once all recordings are completed';    
     elemButton.onclick = e => _packageButtonHandler(e.target);
     
+    var elemLink = document.createElement('a');
+    elemLink.download = config.downloadfilename + ".zip";
+    elemLink.innerHTML = 'for downloading';
+    elemLink.href = ''; // intentionally blank
+    
     page.packagebutton = elemButton;
+    page.downloadelement = elemLink;
     elemContainer.appendChild(elemButton);
+    elemContainer.appendChild(elemLink);
     
     return elemContainer;
   }
@@ -495,7 +502,10 @@ const app = function () {
 
     zip.generateAsync({type:"blob"})
     .then(function(content) { 
-      saveAs(content, config.downloadfilename + ".zip"); 
+      //saveAs(content, config.downloadfilename + ".zip"); 
+      var url = URL.createObjectURL(content);
+      page.downloadelement.href = url;
+      page.downloadelement.click();
     });
   }
   
