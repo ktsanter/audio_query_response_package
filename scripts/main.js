@@ -485,7 +485,6 @@ const app = function () {
     
     for (var i = 0; i < settings.mp3blobs.length; i++) {
       var blob = settings.mp3blobs[i];
-      console.log(blob);
 
       var filename1 = _numberElementId('response', (i+1)) + AUDIO_FILETYPE_EXTENSION_CHROME; 
       var filename2 = _numberElementId('response', (i+1)) + AUDIO_FILETYPE_EXTENSION_FIREFOX; 
@@ -497,7 +496,6 @@ const app = function () {
     zip.generateAsync({type:"blob"})
     .then(function(content) { 
       saveAs(content, config.downloadfilename + ".zip"); 
-      console.log(content);
     });
   }
   
