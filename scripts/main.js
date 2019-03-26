@@ -495,8 +495,10 @@ const app = function () {
     }
 
     zip.generateAsync({type:"blob"})
-    .then(function(content) { saveAs(content, config.downloadfilename + ".zip"); })
-    .catch((err) => console.log(err));
+    .then(function(content) { 
+      saveAs(content, config.downloadfilename + ".zip"); 
+      console.log(content);
+    });
   }
   
 	//------------------------------------------------------------------
