@@ -70,6 +70,7 @@ body {
   border-radius: 6px;
   margin-bottom: 2px;
   margin-right: 2px;
+  padding: 0px 2px 2px 2px;
 }
 
 .record-control:disabled {
@@ -92,6 +93,11 @@ body {
 .play-control {
   margin-right: 2px;
   margin-bottom: 2px;
+  padding: 0px 1px 2px 2px;
+}
+
+.delete-control {
+  padding: 0px 1px 1px 1px;
 }
 
 .play-control, .playprompt-control, .delete-control {
@@ -106,15 +112,19 @@ body {
 }
 
 .playprompt-control {
-  margin-right: 8px;
+  margin-left: -2px;
+  padding: 0px 2px 2px 2px;
 }
 
 .package-control {
   font-size: 20px;
   border: 1px solid var(--MV-light-gray);
   border-radius: 6px;
+  background-color: lightgreen;
+  padding: 0px 2px 2px 2px;
 }
 
 .package-control:disabled {
-  background-color: var(--MV-dark-gray);
+  background-color: var(--MV-light-gray);
+  border: 1px solid var(--MV-black);
 }
