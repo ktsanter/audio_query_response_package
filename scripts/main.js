@@ -230,6 +230,7 @@ const app = function () {
     elemLink.download = config.downloadfilename + ".zip";
     elemLink.innerHTML = 'for downloading';
     elemLink.href = ''; // intentionally blank
+    elemLink.style.display = 'none';
     
     page.packagebutton = elemButton;
     page.downloadelement = elemLink;
@@ -502,9 +503,7 @@ const app = function () {
 
     zip.generateAsync({type:"blob"})
     .then(function(content) { 
-      //saveAs(content, config.downloadfilename + ".zip"); 
-      var url = URL.createObjectURL(content);
-      page.downloadelement.href = url;
+      page.downloadelement.href = URL.createObjectURL(content);
       page.downloadelement.click();
     });
   }
