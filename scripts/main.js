@@ -1,5 +1,5 @@
 //
-// TODO: verify ZIP download works in Firefox
+// TODO: deal with MarkDown rate limiting from GitHub
 //
 // sample file IDs for testing
 // 1a5u8SfLCSpMc1fmgUmIWMWHLz8kesSPbJB-ZdgDwg3s
@@ -70,8 +70,6 @@ const app = function () {
 	function _initializeSettings() {
     var result = false;
 
-    //settings.sourcefileid = '1a5u8SfLCSpMc1fmgUmIWMWHLz8kesSPbJB-ZdgDwg3s';
-   
     var params = {};
     var urlParams = new URLSearchParams(window.location.search);
 		params.sourcefileid = urlParams.has('sourcefileid') ? urlParams.get('sourcefileid') : null;
@@ -111,9 +109,13 @@ const app = function () {
   function _renderInstructions(instructions) {
     var elemContainer = document.createElement('div');
     elemContainer.classList.add('arp-instructions');
-    elemContainer.innerHTML = instructions;
+    _convertMarkdownToHTML(instructions, _setNotice, _setInnerHTML, elemContainer);
     
     return elemContainer;
+  }
+  
+  function _setInnerHTML(textdata, elem) {
+    elem.innerHTML = textdata;
   }
 
   function _renderItems(items) {
@@ -162,7 +164,7 @@ const app = function () {
     
     if (item.textprompt != NO_VALUE && item.textprompt != null && item.textprompt != '') {
         var elemTextPrompt = document.createElement('span');
-        elemTextPrompt.innerHTML = item.textprompt;
+        _convertMarkdownToHTML(item.textprompt, _setNotice, _setInnerHTML, elemTextPrompt);
         elemContainer.appendChild(elemTextPrompt);
     }
 
@@ -535,7 +537,7 @@ const app = function () {
   function _audioEndedHandler(elemTarget) {
     _audioEnded(elemTarget);
   }
-
+  
 	//---------------------------------------
 	// utility functions
 	//----------------------------------------

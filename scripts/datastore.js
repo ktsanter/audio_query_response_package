@@ -51,3 +51,34 @@ function _getConfigData (sourceFileId, reportErr, callback1) {
       reportErr('_getConfigData', error);
 		});
 }
+
+//--------------------------------------------------------------
+// use GitHub Developer Markdown API
+//--------------------------------------------------------------
+function _convertMarkdownToHTML(data, notice, callback, elemToSet) {
+  if (true) {  // alternative until I figure out rate limiting from GitHub
+    elemToSet.innerHTML = _alternativeConvertMarkdownToHTML(data);
+    return;
+  }
+  
+	var postData = {
+    "text": data,
+    "mode": "markdown"
+	};
+  
+  var url = 'https://api.github.com/markdown/raw';
+	
+	fetch(url, {
+			method: 'POST',
+			headers: { 'Content-Type': 'text/plain' },
+			body: data,
+      mode: 'cors'
+		})
+    .then( (results) => results.text() )
+		.then( (textdata) => callback(textdata, elemToSet) )
+
+		.catch((error) => {
+			notice('Unexpected error using markdown API');
+			console.log(error);
+		})
+}
