@@ -28,7 +28,7 @@ const API_KEY = 'MVaudioqueryresponseAPI';
 // use Google Sheet web API to get tag and comment data
 //--------------------------------------------------------------
 function _getConfigData (sourceFileId, reportErr, callback1) {
- //console.log('loading config data...');
+ //console.log('loading config data from ' + sourceFileId + '...');
   var urlParams = {
     sourcefileid: sourceFileId
   };

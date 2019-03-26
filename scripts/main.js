@@ -1,6 +1,12 @@
 //
-// TODO: swap order of getting config and configuring audio
+// TODO: verify ZIP download works in Firefox
 //
+// sample file IDs for testing
+// 1a5u8SfLCSpMc1fmgUmIWMWHLz8kesSPbJB-ZdgDwg3s
+// 1dATfMyp4EyRLu3-s3U83sX25nKEmLUxXbJKUk0Nd_jM
+//
+//
+
 const app = function () {
 	const page = {};
 
@@ -12,6 +18,7 @@ const app = function () {
   const DOWNLOAD_SYMBOL = '⬇️';
 	
 	const settings = {
+    sourcefileid: null,
     streamavailable: false,
     mediarecorder: [],
     audiochunks: [],
@@ -34,17 +41,7 @@ const app = function () {
     recordinginprogress: -1
   };
   
-  const config = {  // this should be made from query params
-    title: "Title of query/response package",
-    instructions: "These are the instructions for this query/response package",
-    readme: "This comment should describe the package",
-    downloadfilename: "arp_package000",
-    items: [
-      { textprompt: "This text prompt is combined with an audio prompt.", audioprompt: "https://drive.google.com/uc?id=1uTMdGtut2bwVtiMYbnU5taPmIXcyVDWm" },
-      { textprompt: "This text prompt has no accompanying audio prompt.", audioprompt: null },
-      { textprompt: null, audioprompt: "https://drive.google.com/uc?id=1uTMdGtut2bwVtiMYbnU5taPmIXcyVDWm" }
-    ]
-  }
+  var config = {};  // loaded via Google web API
   
 	//---------------------------------------
 	// get things going
@@ -56,12 +53,9 @@ const app = function () {
     page.contents = document.getElementById('contents');
 		
 		_setNotice('initializing...');
-		if (!_initializeSettings()) {
-			_setNotice('Failed to initialize - invalid parameters');
-		
-    } else {
-			_setNotice('');
-      _configureAudio();
+		if (_initializeSettings()) {
+			_setNotice('loading configuration data...');
+      _getConfigData(settings.sourcefileid, _reportError, _configureAudio);
 		}
 	}
 	
@@ -69,17 +63,31 @@ const app = function () {
 	// query params:
 	//-------------------------------------------------------------------------------------
 	function _initializeSettings() {
-		var result = true;
+    var result = false;
 
-		return result;
-	}
+    //settings.sourcefileid = '1a5u8SfLCSpMc1fmgUmIWMWHLz8kesSPbJB-ZdgDwg3s';
+   
+    var params = {};
+    var urlParams = new URLSearchParams(window.location.search);
+		params.sourcefileid = urlParams.has('sourcefileid') ? urlParams.get('sourcefileid') : null;
+
+    if (params.sourcefileid != null) {
+      settings.sourcefileid = params.sourcefileid;
+			result = true;
+
+    } else {   
+      _setNotice('failed to initialize: source file ID is missing or invalid');
+    }
+    
+    return result;
+  }
 	
 	//-----------------------------------------------------------------------------
 	// page rendering
 	//-----------------------------------------------------------------------------  
   function _renderPage(data) {
-    console.log('data=' + JSON.stringify(data));
     if (settings.streamavailable) {
+      _setNotice('');
       page.contents.appendChild(_renderTitle(config.title));
       page.contents.appendChild(_renderInstructions(config.instructions));
       page.contents.appendChild(_renderItems(config.items));  
@@ -217,6 +225,9 @@ const app = function () {
     return elemContainer;
   }
 
+	//-----------------------------------------------------------------------------
+	// control styling, visibility, and enabling
+	//-----------------------------------------------------------------------------  
   function _setRecordButtonStyling(elemTarget, stageName) {
     var recordButtons = settings.recordcontrols;
     for (var i = 0; i < recordButtons.length; i++) {
@@ -304,16 +315,18 @@ const app = function () {
 	//-----------------------------------------------------------------------------
 	// audio setup and management
 	//-----------------------------------------------------------------------------  
-  function _configureAudio() {
+  function _configureAudio(data) {
+    config = data;
+    
     navigator.mediaDevices.getUserMedia({audio:true})
     .then((stream) => _configureAudioControls(stream))
     .catch((err) => _audioConfigureError(err))
-    .then(() =>  _getConfigData('1a5u8SfLCSpMc1fmgUmIWMWHLz8kesSPbJB-ZdgDwg3s', _reportError, _renderPage));
+    .then(() => _renderPage());
   }
   
   function _configureAudioControls(stream) {
     settings.streamavailable = true;
-    
+
     for (var i = 0; i < config.items.length; i++) {
       var thisRecorder = new MediaRecorder(stream);
       var thisChunks = [];
@@ -466,7 +479,7 @@ const app = function () {
     for (var i = 0; i < settings.mp3blobs.length; i++) {
       var blob = settings.mp3blobs[i];
       var blobname = _numberElementId('response', (i+1)) + '.mp3';
-      zip.file(blobname, blob);
+      zip.file(blobname, blob, {binary: true});
     }
 
     zip.generateAsync({type:"blob"})
