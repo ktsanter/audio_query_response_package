@@ -1,7 +1,7 @@
 //
 // TODO: deal with MarkDown rate limiting from GitHub
 //
-// sample file IDs for testing
+// sample file IDs for testing:
 // 1a5u8SfLCSpMc1fmgUmIWMWHLz8kesSPbJB-ZdgDwg3s
 // 1dATfMyp4EyRLu3-s3U83sX25nKEmLUxXbJKUk0Nd_jM
 //
@@ -488,8 +488,10 @@ const app = function () {
 	//------------------------------------------------------------------
   function _packageAudioRecordings() {
     var zip = new JSZip();
+    var currDate = new Date();
+    var dateWithOffset = new Date(currDate.getTime() - currDate.getTimezoneOffset() * 60000);
     
-    zip.file('README.txt', config.readme + '\n');  // text must end in \n
+    zip.file('README.txt', config.readme + '\n', {date: dateWithOffset});  // text must end in \n
     
     for (var i = 0; i < settings.mp3blobs.length; i++) {
       var blob = settings.mp3blobs[i];
@@ -497,8 +499,8 @@ const app = function () {
       var filename1 = _numberElementId('response', (i+1)) + AUDIO_FILETYPE_EXTENSION_CHROME; 
       var filename2 = _numberElementId('response', (i+1)) + AUDIO_FILETYPE_EXTENSION_FIREFOX; 
 
-      zip.file(filename1, blob);
-      zip.file(filename2, blob);
+      zip.file(filename1, blob, {date: dateWithOffset});
+      zip.file(filename2, blob, {date: dateWithOffset});
     }
 
     zip.generateAsync({type:"blob"})
