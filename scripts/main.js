@@ -51,7 +51,7 @@ const app = function () {
 	//---------------------------------------
 	// get things going
 	//----------------------------------------
-	function init (navmode) {
+	async function init (navmode) {
     page.header = document.getElementById('header');       
     page.notice = document.getElementById('notice');       
 		page.body = document.getElementsByTagName('body')[0];
@@ -60,7 +60,9 @@ const app = function () {
 		_setNotice('initializing...');
 		if (_initializeSettings()) {
 			_setNotice('loading configuration data...');
-      _getConfigData(settings.sourcefileid, _reportError, _configureAudio);
+      config = await _getConfigData(settings.sourcefileid, _reportError);
+      await _configureAudio();
+      _renderPage();
 		}
 	}
 	
@@ -88,7 +90,7 @@ const app = function () {
 	//-----------------------------------------------------------------------------
 	// page rendering
 	//-----------------------------------------------------------------------------  
-  function _renderPage(data) {
+  function _renderPage() {
     if (settings.streamavailable) {
       _setNotice('');
       page.contents.appendChild(_renderTitle(config.title));
@@ -330,13 +332,15 @@ const app = function () {
 	//-----------------------------------------------------------------------------
 	// audio setup and management
 	//-----------------------------------------------------------------------------  
-  function _configureAudio(data) {
-    config = data;
-    
-    navigator.mediaDevices.getUserMedia({audio:true})
-    .then((stream) => _configureAudioControls(stream))
-    .catch((err) => _audioConfigureError(err))
-    .then(() => _renderPage());
+  async function _configureAudio() {    
+    try {
+      var stream = await navigator.mediaDevices.getUserMedia({audio:true});
+      await _configureAudioControls(stream);
+
+    } catch (error) {
+      settings.streamavailable = false;
+      _reportError('_configureAudio', error);
+    }
   }
   
   function _configureAudioControls(stream) {
@@ -355,11 +359,6 @@ const app = function () {
     }
   }
   
-  function _audioConfigureError(err) {
-    settings.streamavailable = false;
-    _reportError('getUserMedia', err);
-  }
-
   function _startRecording(elemTarget) {
     try {
       var elemNumber = _getElementNumber(elemTarget);

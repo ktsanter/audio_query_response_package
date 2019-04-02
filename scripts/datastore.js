@@ -27,29 +27,21 @@ const API_KEY = 'MVaudioqueryresponseAPI';
 //--------------------------------------------------------------
 // use Google Sheet web API to get tag and comment data
 //--------------------------------------------------------------
-function _getConfigData (sourceFileId, reportErr, callback1) {
- //console.log('loading config data from ' + sourceFileId + '...');
+async function _getConfigData(sourceFileId, reportErr) {
   var urlParams = {
     sourcefileid: sourceFileId
   };
-
-	fetch(_buildApiUrl('config', urlParams))
-		.then((response) => response.json())
-		.then((json) => {
-			//console.log('json.status=' + json.status);
-			//console.log('json.data: ' + JSON.stringify(json.data));
-			if (json.status !== 'success') {
-				console.log('json.message=' + json.message);
-        reportErr('_getConfigData', json.message);
-			} else {
-				callback1(json.data);
-			}
-		})
-		.catch((error) => {
-			console.log('Unexpected error loading config data');
-			console.log(error);
-      reportErr('_getConfigData', error);
-		});
+  var url = _buildApiUrl('config', urlParams);
+  
+  try {
+    const resp = await fetch(url);
+    const json = await resp.json();
+    return json.data;
+    
+  } catch (error) {
+    console.log('error in _getConfigData: ' + error);
+    reportErr('_getConfigData', error);
+  }
 }
 
 //--------------------------------------------------------------
@@ -57,10 +49,9 @@ function _getConfigData (sourceFileId, reportErr, callback1) {
 //--------------------------------------------------------------
 function _convertMarkdownToHTML(data, notice, callback, elemToSet) {
   if (true) {  // alternative until I figure out rate limiting from GitHub
-    elemToSet.innerHTML = _alternativeConvertMarkdownToHTML(data);
-    return;
+    callback(_alternativeConvertMarkdownToHTML(data), elemToSet);
   }
-  
+  /*
 	var postData = {
     "text": data,
     "mode": "markdown"
@@ -81,4 +72,5 @@ function _convertMarkdownToHTML(data, notice, callback, elemToSet) {
 			notice('Unexpected error using markdown API');
 			console.log(error);
 		})
+    */
 }
