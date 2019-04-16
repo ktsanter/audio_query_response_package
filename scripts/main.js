@@ -162,6 +162,9 @@ const app = function () {
       elemPlay.onclick = e => _playPromptButtonHandler(e.target);
       _setPromptPlayButtonStyling(elemPlay, 'play');
       elemContainer.appendChild(elemPlay);
+      
+      settings.audiopromptcontrols.push(elemAudio);
+      settings.audiopromptplaycontrols.push(elemPlay);
     }
     
     if (item.textprompt != NO_VALUE && item.textprompt != null && item.textprompt != '') {
@@ -170,8 +173,6 @@ const app = function () {
         elemContainer.appendChild(elemTextPrompt);
     }
 
-    settings.audiopromptcontrols.push(elemAudio);
-    settings.audiopromptplaycontrols.push(elemPlay);
       
     return elemContainer;
   }

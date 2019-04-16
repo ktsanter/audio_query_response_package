@@ -48,7 +48,7 @@ async function _getConfigData(sourceFileId, reportErr) {
 // use GitHub Developer Markdown API
 //--------------------------------------------------------------
 function _convertMarkdownToHTML(data, notice, callback, elemToSet) {
-  if (true) {  // alternative until I figure out rate limiting from GitHub
+  if (true) {  // alternative until I figure out rate limiting from GitHub (change to async/await if re-enabled)
     callback(_alternativeConvertMarkdownToHTML(data), elemToSet);
   }
   /*
