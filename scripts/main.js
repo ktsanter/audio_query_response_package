@@ -7,6 +7,12 @@
 //
 
 const app = function () {
+  const apiInfo = {
+    apibase: 'https://script.google.com/macros/s/AKfycbxV2GBJNOReNqHyaVSOgwPkANsjM3H8ZqdnJKNx0OZhCGraj5rO/exec',
+    apikey: 'MVaudioqueryresponseAPI'
+  };
+  var config = {};  // loaded via Google web API using apiInfo
+  
 	const page = {};
   
   const AUDIO_MIMETYPE = 'audio/webm';
@@ -46,25 +52,42 @@ const app = function () {
     recordinginprogress: -1
   };
   
-  var config = {};  // loaded via Google web API
-  
 	//---------------------------------------
 	// get things going
 	//----------------------------------------
 	async function init (navmode) {
-    page.header = document.getElementById('header');       
-    page.notice = document.getElementById('notice');       
 		page.body = document.getElementsByTagName('body')[0];
-    page.contents = document.getElementById('contents');
+    page.body.classList.add('arp-colorscheme');
+    _renderStandardElements();
 		
 		_setNotice('initializing...');
 		if (_initializeSettings()) {
 			_setNotice('loading configuration data...');
-      config = await _getConfigData(settings.sourcefileid, _reportError);
-      await _configureAudio();
-      _renderPage();
+      
+      var requestResult = await googleSheetWebAPI.webAppGet(apiInfo, 'config', {sourcefileid: settings.sourcefileid}, _reportError);
+      if (requestResult.success) {
+        config = requestResult.data;
+        await _configureAudio();
+        _renderPage();
+      }
 		}
 	}
+  
+  function _renderStandardElements() {
+    page.header = document.createElement('div');
+    page.header.id = 'header';
+    page.header.classList.add = 'arp_header';
+    page.body.appendChild(page.header);
+    
+    page.notice = document.createElement('div');
+    page.notice.id = 'notice';
+    page.notice.classList.add('arp-notice');
+    page.body.appendChild(page.notice);
+    
+    page.contents = document.createElement('div');
+    page.contents.id = 'contents';
+    page.body.appendChild(page.contents);
+  }
 	
 	//-------------------------------------------------------------------------------------
 	// query params:
@@ -93,6 +116,7 @@ const app = function () {
   function _renderPage() {
     if (settings.streamavailable) {
       _setNotice('');
+
       page.contents.appendChild(_renderTitle(config.title));
       page.contents.appendChild(_renderInstructions(config.instructions));
       page.contents.appendChild(_renderItems(config.items));  
@@ -547,6 +571,38 @@ const app = function () {
   
   function _audioEndedHandler(elemTarget) {
     _audioEnded(elemTarget);
+  }
+  
+
+  //--------------------------------------------------------------
+  // use GitHub Developer Markdown API
+  //--------------------------------------------------------------
+  function _convertMarkdownToHTML(data, notice, callback, elemToSet) {
+    if (true) {  // alternative until I figure out rate limiting from GitHub (change to async/await if re-enabled)
+      callback(_alternativeConvertMarkdownToHTML(data), elemToSet);
+    }
+    /*
+    var postData = {
+      "text": data,
+      "mode": "markdown"
+    };
+    
+    var url = 'https://api.github.com/markdown/raw';
+    
+    fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: data,
+        mode: 'cors'
+      })
+      .then( (results) => results.text() )
+      .then( (textdata) => callback(textdata, elemToSet) )
+
+      .catch((error) => {
+        notice('Unexpected error using markdown API');
+        console.log(error);
+      })
+      */
   }
   
 	//---------------------------------------
