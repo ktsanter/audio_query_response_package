@@ -22,12 +22,6 @@ body {
 	margin-right: 12px;
 }
 
-.arp-notice {
-	color: var(--MV-blue);
-	font-size: 14px;
-	font-style: italic;  
-}
-
 #contents {}
 
 .arp-title {
@@ -128,3 +122,22 @@ body {
   background-color: var(--MV-light-gray);
   border: 1px solid var(--MV-black);
 }
+
+/*-- standard error and notice tools --*/
+.standard_error {
+  display: none;
+  font-style: italic;
+  color: blue;
+  margin-bottom: 0.4em;;
+}
+
+.standard-notice { 
+  font-style: italic;
+}
+
+#noticeSpinner {
+  font-size: 0.9em;
+  margin-left: 0.2em;
+  margin-right: 0.2em;
+}
+/*-- end of standard notice and error --*/

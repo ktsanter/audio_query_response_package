@@ -1,10 +1,8 @@
-//
-// TODO: deal with MarkDown rate limiting from GitHub
-//
-// sample file IDs for testing:
-// 1a5u8SfLCSpMc1fmgUmIWMWHLz8kesSPbJB-ZdgDwg3s
-// 1dATfMyp4EyRLu3-s3U83sX25nKEmLUxXbJKUk0Nd_jM
-//
+//-------------------------------------------------------------------
+// audio query/response package toolbar
+//-------------------------------------------------------------------
+// TODO:
+//-------------------------------------------------------------------
 
 const app = function () {
   const apiInfo = {
@@ -60,33 +58,20 @@ const app = function () {
     page.body.classList.add('arp-colorscheme');
     _renderStandardElements();
 		
-		_setNotice('initializing...');
 		if (_initializeSettings()) {
-			_setNotice('loading configuration data...');
+			page.notice.setNotice('loading configuration data...', true);
       
-      var requestResult = await googleSheetWebAPI.webAppGet(apiInfo, 'config', {sourcefileid: settings.sourcefileid}, _reportError);
+      var requestResult = await googleSheetWebAPI.webAppGet(apiInfo, 'config', {sourcefileid: settings.sourcefileid}, page.notice);
       if (requestResult.success) {
         config = requestResult.data;
         await _configureAudio();
         _renderPage();
-      }
+      } 
 		}
 	}
   
   function _renderStandardElements() {
-    page.header = document.createElement('div');
-    page.header.id = 'header';
-    page.header.classList.add = 'arp_header';
-    page.body.appendChild(page.header);
-    
-    page.notice = document.createElement('div');
-    page.notice.id = 'notice';
-    page.notice.classList.add('arp-notice');
-    page.body.appendChild(page.notice);
-    
-    page.contents = document.createElement('div');
-    page.contents.id = 'contents';
-    page.body.appendChild(page.contents);
+    page.notice = new StandardNotice(page.body, page.body);
   }
 	
 	//-------------------------------------------------------------------------------------
@@ -115,8 +100,11 @@ const app = function () {
 	//-----------------------------------------------------------------------------  
   function _renderPage() {
     if (settings.streamavailable) {
-      _setNotice('');
+      page.notice.setNotice('');
 
+      page.contents = CreateElement.createDiv(null, 'contents');
+      page.body.appendChild(page.contents);
+      
       page.contents.appendChild(_renderTitle(config.title));
       page.contents.appendChild(_renderInstructions(config.instructions));
       page.contents.appendChild(_renderItems(config.items));  
@@ -125,50 +113,39 @@ const app = function () {
   }
   
   function _renderTitle(title) {
-    var elemContainer = document.createElement('div');
-    elemContainer.classList.add('arp-title');
-    elemContainer.innerHTML = title;
-    
-    return elemContainer;
+    var container = CreateElement.createDiv(null, 'arp-title', title);
+    return container;
   }
 
   function _renderInstructions(instructions) {
-    var elemContainer = document.createElement('div');
-    elemContainer.classList.add('arp-instructions');
-    _convertMarkdownToHTML(instructions, _setNotice, _setInnerHTML, elemContainer);
-    
-    return elemContainer;
-  }
-  
-  function _setInnerHTML(textdata, elem) {
-    elem.innerHTML = textdata;
+    var container = CreateElement.createDiv(null, 'arp-instructions', MarkdownToHTML.convert(instructions));
+    return container;
   }
 
   function _renderItems(items) {
-    var elemContainer = document.createElement('div');
-
+    var container = CreateElement.createDiv(null, null);
+    
     for (var i = 0; i < items.length; i++) {
-        elemContainer.appendChild(_renderItem(i, items[i]));
+      container.appendChild(_renderItem(i, items[i]))
     }
     
-    return elemContainer;
+    return container;
   }
   
   function _renderItem(index, item) {
-    var elemContainer = document.createElement('div');
-    elemContainer.classList.add('item-container');
+    var container = CreateElement.createDiv(null, 'item-container');
     
-    elemContainer.appendChild(_renderPrompt(index, item));
-    elemContainer.appendChild(_renderResponse(index, item));
+    container.appendChild(_renderPrompt(index, item));
+    container.appendChild(_renderResponse(index, item));
     
-    return elemContainer;
+    return container;
   }
   
   function _renderPrompt(index, item) {  
     var elemAudioPrompt = null;
     var elemAudioPromptPlay = null;
-    var elemContainer = document.createElement('div');
-    elemContainer.classList.add('item-prompt');
+    
+    var container = CreateElement.createDiv(null, 'item-prompt');
     
     if (item.audioprompt != NO_VALUE && item.audioprompt != null && item.audioprompt != '') {
       var elemAudio = document.createElement('audio');
@@ -178,93 +155,72 @@ const app = function () {
       elemAudio.src = item.audioprompt;
       elemAudio.style.display = 'none';
       elemAudio.onended = e => _audioPromptEndedHandler(e.target);
-      elemContainer.appendChild(elemAudio);
+      container.appendChild(elemAudio);
 
-      elemPlay = document.createElement('button');
-      elemPlay.id = _numberElementId('btnPlayPrompt', index);
-      elemPlay.classList.add('playprompt-control');
-      elemPlay.onclick = e => _playPromptButtonHandler(e.target);
-      _setPromptPlayButtonStyling(elemPlay, 'play');
-      elemContainer.appendChild(elemPlay);
-      
+      playbutton = CreateElement.createButton(_numberElementId('btnPlayPrompt', index), 'playprompt-control', null, null, e => _playPromptButtonHandler(e.target));
+      container.appendChild(playbutton);
+      _setPromptPlayButtonStyling(playbutton, 'play');
+     
       settings.audiopromptcontrols.push(elemAudio);
-      settings.audiopromptplaycontrols.push(elemPlay);
+      settings.audiopromptplaycontrols.push(playbutton);
     }
     
     if (item.textprompt != NO_VALUE && item.textprompt != null && item.textprompt != '') {
-        var elemTextPrompt = document.createElement('span');
-        _convertMarkdownToHTML(item.textprompt, _setNotice, _setInnerHTML, elemTextPrompt);
-        elemContainer.appendChild(elemTextPrompt);
+      var textPrompt = CreateElement.createSpan(null, null, MarkdownToHTML.convert(item.textprompt));
+      container.appendChild(textPrompt);
     }
 
-      
-    return elemContainer;
+    return container;
   }
   
   function _renderResponse(index, item) {
-    var elemContainer = document.createElement('div');
+    var container = CreateElement.createDiv(null, 'item-response');
     
-    elemContainer.classList.add('item-response');
-    var elemButton = document.createElement('button');
-    elemButton.id = _numberElementId('btnRecording', index);
-    elemButton.classList.add('record-control');
-    elemButton.onclick = e => _recordButtonHandler(e.target);
-    settings.recordcontrols.push(elemButton);
-    _setRecordButtonStyling(elemButton, 'start');
-    elemContainer.appendChild(elemButton);
+    var recordbutton = CreateElement.createButton(_numberElementId('btnRecording', index), 'record-control', null, null, e => _recordButtonHandler(e.target));
+    container.appendChild(recordbutton);
+    settings.recordcontrols.push(recordbutton);
+    _setRecordButtonStyling(recordbutton, 'start');
     
     var elemAudio = document.createElement('audio');
+    container.appendChild(elemAudio);
     elemAudio.id = _numberElementId('recordedAudio', index);
     elemAudio.classList.add('audio-control');
     elemAudio.innerHTML = 'HTML 5 audio control not supported by this browser';
     elemAudio.style.display = 'none';
     elemAudio.onended = e => _audioEndedHandler(e.target);
     settings.audiocontrols.push(elemAudio);
-    elemContainer.appendChild(elemAudio);
-    
-    var elemPlay = document.createElement('button');
-    elemPlay.id = _numberElementId('btnPlay', index);
-    elemPlay.classList.add('play-control');
-    elemPlay.onclick = e => _playButtonHandler(e.target);
-    settings.playcontrols.push(elemPlay);
-    elemContainer.appendChild(elemPlay);
-        
-    var elemDelete = document.createElement('button');
-    elemDelete.id = _numberElementId('btnDelete', index);
-    elemDelete.classList.add('delete-control');
-    elemDelete.title = 'delete recording';
-    elemDelete.innerHTML = TRASH_SYMBOL;
-    elemDelete.onclick = e => _deleteButtonHandler(e.target);
-    settings.deletecontrols.push(elemDelete);
-    elemContainer.appendChild(elemDelete);
-    
-    _setPlayButtonStyling(elemPlay, 'play');
 
-    return elemContainer;
+    var playbutton = CreateElement.createButton(_numberElementId('btnPlay', index), 'play-control', null, null, e => _playButtonHandler(e.target));
+    container.appendChild(playbutton);
+    settings.playcontrols.push(playbutton);
+    
+    var deletebutton = CreateElement.createButton(_numberElementId('btnDelete', index), 'delete-control', TRASH_SYMBOL, 'delete recording', e => _deleteButtonHandler(e.target));
+    container.appendChild(deletebutton);
+    settings.deletecontrols.push(deletebutton);
+    
+    _setPlayButtonStyling(playbutton, 'play');
+
+    return container;
   }
   
   function _createPackageControl() {
-    var elemContainer = document.createElement('div');
+    //var elemContainer = document.createElement('div');
+    var container = CreateElement.createDiv(null, null);
     
-    var elemButton = document.createElement('button');
-    elemButton.classList.add('package-control');
-    elemButton.disabled = true;
-    elemButton.innerHTML = DOWNLOAD_SYMBOL;
-    elemButton.title = 'download recordings in a ZIP file - only available once all recordings are completed';    
-    elemButton.onclick = e => _packageButtonHandler(e.target);
-    
-    var elemLink = document.createElement('a');
-    elemLink.download = config.downloadfilename + ".zip";
-    elemLink.innerHTML = 'for downloading';
-    elemLink.href = ''; // intentionally blank
-    elemLink.style.display = 'none';
-    
-    page.packagebutton = elemButton;
-    page.downloadelement = elemLink;
-    elemContainer.appendChild(elemButton);
-    elemContainer.appendChild(elemLink);
-    
-    return elemContainer;
+    var buttontitle = 'download recordings in a ZIP file - only available once all recordings are completed';
+    var packagebutton = CreateElement.createButton(null, 'package-control', DOWNLOAD_SYMBOL, buttontitle, e => _packageButtonHandler(e.target));
+    container.appendChild(packagebutton)
+    page.packagebutton = packagebutton;
+
+    var downloadlink = CreateElement.createLink(null, null);
+    container.appendChild(downloadlink);
+    downloadlink.download = config.downloadfilename + ".zip";
+    downloadlink.innerHTML = 'for downloading';
+    downloadlink.href = ''; // intentionally blank
+    downloadlink.style.display = 'none';    
+    page.downloadelement = downloadlink;
+  
+   return container;
   }
 
 	//-----------------------------------------------------------------------------
@@ -364,7 +320,7 @@ const app = function () {
 
     } catch (error) {
       settings.streamavailable = false;
-      _reportError('_configureAudio', error);
+      page.notice.reportError('_configureAudio', error);
     }
   }
   
@@ -573,55 +529,9 @@ const app = function () {
     _audioEnded(elemTarget);
   }
   
-
-  //--------------------------------------------------------------
-  // use GitHub Developer Markdown API
-  //--------------------------------------------------------------
-  function _convertMarkdownToHTML(data, notice, callback, elemToSet) {
-    if (true) {  // alternative until I figure out rate limiting from GitHub (change to async/await if re-enabled)
-      callback(_alternativeConvertMarkdownToHTML(data), elemToSet);
-    }
-    /*
-    var postData = {
-      "text": data,
-      "mode": "markdown"
-    };
-    
-    var url = 'https://api.github.com/markdown/raw';
-    
-    fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
-        body: data,
-        mode: 'cors'
-      })
-      .then( (results) => results.text() )
-      .then( (textdata) => callback(textdata, elemToSet) )
-
-      .catch((error) => {
-        notice('Unexpected error using markdown API');
-        console.log(error);
-      })
-      */
-  }
-  
 	//---------------------------------------
 	// utility functions
-	//----------------------------------------
-	function _setNotice (label) {
-		page.notice.innerHTML = label;
-
-		if (label == '') {
-			page.notice.style.display = 'none'; 
-		} else {
-			page.notice.style.display = 'block';
-		}
-	}
-  
-  function _reportError(src, err) {
-    _setNotice('Error in ' + src + ': ' + err.name + ' "' + err.message + '"');
-  }
-
+	//----------------------------------------  
   function _getElementNumber(elem) {
     return parseInt(('000' + elem.id).slice(-3));
   }
