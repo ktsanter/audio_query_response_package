@@ -57,15 +57,28 @@ const app = function () {
 		page.body = document.getElementsByTagName('body')[0];
     page.body.classList.add('arp-colorscheme');
     _renderStandardElements();
-		
-		if (_initializeSettings()) {
+
+    var expectedQueryParams = [
+      {key: 'sourcefilelink', required: true},
+      {key: 'instance', required: true}
+    ];
+        
+    if (_initializeSettings(expectedQueryParams)) {
 			page.notice.setNotice('loading configuration data...', true);
+      
+      var splitId = settings.sourcefilelink.match(/\?id=([a-zA-Z0-9-_]+)/);
+      if (splitId == null) {
+        settings.sourcefileid = '';
+      } else {
+        settings.sourcefileid = splitId[0].slice(4);
+      }
       
       var requestResult = await googleSheetWebAPI.webAppGet(apiInfo, 'config', {sourcefileid: settings.sourcefileid}, page.notice);
       if (requestResult.success) {
         config = requestResult.data;
         await _configureAudio();
         _renderPage();
+        _postHeightChangeMessage();
       } 
 		}
 	}
@@ -75,25 +88,33 @@ const app = function () {
   }
 	
 	//-------------------------------------------------------------------------------------
-	// query params:
+	// process query params
 	//-------------------------------------------------------------------------------------
-	function _initializeSettings() {
+	function _initializeSettings(expectedParams) {
     var result = false;
 
-    var params = {};
     var urlParams = new URLSearchParams(window.location.search);
-		params.sourcefileid = urlParams.has('sourcefileid') ? urlParams.get('sourcefileid') : null;
+    for (var i = 0; i < expectedParams.length; i++) {
+      var key = expectedParams[i].key;
+      settings[key] = urlParams.has(key) ? urlParams.get(key) : null;
+    }
 
-    if (params.sourcefileid != null) {
-      settings.sourcefileid = params.sourcefileid;
+    var receivedRequiredParams = true;
+    for (var i = 0; i < expectedParams.length && receivedRequiredParams; i++) {
+      var key = expectedParams[i].key;
+      if (expectedParams[i].required) receivedRequiredParams = (settings[key] != null);
+    }
+    
+    if (receivedRequiredParams) {
 			result = true;
 
     } else {   
-      _setNotice('failed to initialize: source file ID is missing or invalid');
+      page.notice.setNotice('failed to initialize: invalid parameters');
     }
     
     return result;
-  }
+  }  
+  
 	
 	//-----------------------------------------------------------------------------
 	// page rendering
@@ -540,7 +561,17 @@ const app = function () {
     return  base + ('000' + index).slice(-3);
   }
 
-	//---------------------------------------
+	//-----------------------------------------------------------------------------------
+	// iframe responsive height - post message to parent (if in an iframe) to resizeBy
+	//-----------------------------------------------------------------------------------
+	function _postHeightChangeMessage() {
+    var height = page.contents.scrollHeight + 10;
+    var msg = height + '-' + 'AQRP' + '-' + settings.instance;
+		console.log('posting to parent: ' + msg);
+		window.parent.postMessage(msg, "*");
+	}
+  
+  //---------------------------------------
 	// return from wrapper function
 	//----------------------------------------
 	return {
