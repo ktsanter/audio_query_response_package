@@ -203,7 +203,7 @@ const app = function () {
     embedCode += '<p>';
     embedCode += '<iframe id="iframe-aqrp' + instance + '"';
     embedCode += ' width="' + width + '%"';
-    embedCode += ' height="' + (container.scrollHeight + 40) + '"';
+    embedCode += ' height="' + (container.scrollHeight + 50) + '"';
     embedCode += ' src="' + _makeURL() + '"';
     embedCode += ' allowfullscreen';
     embedCode += ' allow="microphone"';
