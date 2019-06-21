@@ -55,6 +55,7 @@ class AudioQueryResponsePackage {
     this._contents = CreateElement.createDiv(null, 'contents');
     
     this._notice = new StandardNotice(this._contents, this._contents);
+    this._notice._normalNoticeContainer.style.display = 'none';
     this._notice.setNotice('');
     
     await this._configureAudio();

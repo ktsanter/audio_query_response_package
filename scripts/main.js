@@ -18,7 +18,6 @@ const app = function () {
 	//----------------------------------------
 	async function init (navmode) {
 		page.body = document.getElementsByTagName('body')[0];
-    page.body.classList.add('arp-colorscheme');
     
     page.notice = new StandardNotice(page.body, page.body);
 
@@ -41,7 +40,6 @@ const app = function () {
       if (requestResult.success) {
         page.notice.setNotice('');
         _renderPage(requestResult.data);
-        //_postHeightChangeMessage();
       } 
 		}
 	}
@@ -73,8 +71,7 @@ const app = function () {
     
     return result;
   }  
-  
-	
+  	
 	//-----------------------------------------------------------------------------
 	// page rendering
 	//-----------------------------------------------------------------------------  
@@ -83,16 +80,6 @@ const app = function () {
     
     page.body.append(await page.aqrp.render());
   }
-
-	//-----------------------------------------------------------------------------------
-	// iframe responsive height - post message to parent (if in an iframe) to resizeBy
-	//-----------------------------------------------------------------------------------
-	function _postHeightChangeMessage() {
-    var height = page.contents.scrollHeight + 10;
-    var msg = height + '-' + 'AQRP' + '-' + settings.instance;
-		console.log('posting to parent: ' + msg);
-		window.parent.postMessage(msg, "*");
-	}
   
   //---------------------------------------
 	// return from wrapper function

@@ -6,10 +6,15 @@
 //-----------------------------------------------------------------------------------
 
 const app = function () {
-  const appversion = '0.01';
+  const appversion = '0.02';
   const appname = 'Audio query/response package embed maker';
 	const page = {};
   const settings = {};
+  
+  const apiInfo = {
+    apibase: 'https://script.google.com/macros/s/AKfycbxV2GBJNOReNqHyaVSOgwPkANsjM3H8ZqdnJKNx0OZhCGraj5rO/exec',
+    apikey: 'MVaudioqueryresponseAPI'
+  };  
 
   const baseURLforPacingInfo = 'https://ktsanter.github.io/audio_query_response_package/index.html';
   const resizerScript = 'https://drive.google.com/uc?id=19LNI5DrG4AMINqJ4y-o4-RUArm4jJDrL';
@@ -62,6 +67,7 @@ const app = function () {
     container.appendChild(contents);
     
     contents.appendChild(_createSlidesLinkSpecify());
+    contents.appendChild(_createWidthSelect());
     contents.appendChild(_createInstanceSelect());
     
     return container;
@@ -76,8 +82,20 @@ const app = function () {
     textinput.size = 80;
     textinput.addEventListener('click', _handleGeneric, false);
     textinput.title = 'shared link to the Google Sheet with the configuration information';
+    textinput.addEventListener('input', _handleSlidesLinkChange, false);
     
     container.appendChild(CreateElement.createButton(null, null, 'preview', null, _handlePreviewClick));
+    
+    return container;
+  }
+  
+  function _createWidthSelect() {
+    var container = CreateElement.createDiv(null, 'control-container');
+    
+    container.appendChild(CreateElement.createDiv(null, 'control-label', 'width %'));
+    var spininput = CreateElement.createSpinner('inputWidth', null, 60, 30, 100, 5)
+    container.appendChild(spininput);
+    spininput.addEventListener('click', _handleWidthSelectChange, false);
     
     return container;
   }
@@ -100,11 +118,66 @@ const app = function () {
     return container;
   }
   
-  function _previewPackage() {
+  async function _previewPackage() {
+    var success = false;
+    
     var slideslink = document.getElementById('inputSlidesLink').value;
+    var widthpercent = document.getElementById('inputWidth').value;
     var container = document.getElementById('previewContainer');
 
-    container.innerHTML = 'preview "' + slideslink + '"';
+    _clearPreview();
+    
+    page.notice.setNotice('loading preview...', true);
+    page.notice.hideError();
+    var slidesid = _getIdFromLink(slideslink);
+    try {
+      var requestResult = await googleSheetWebAPI.webAppGet(apiInfo, 'config', {sourcefileid: slidesid}, page.notice);
+      if (requestResult.success) {
+        page.notice.setNotice('');
+        var innerContainer = CreateElement.createDiv('innerPreviewContainer', null);
+        container.appendChild(innerContainer);
+        
+        var aqrp = new AudioQueryResponsePackage(requestResult.data);
+        innerContainer.appendChild(await aqrp.render());
+        innerContainer.style.width = widthpercent + '%';
+        
+        container.style.display = 'block';
+        success = true;
+
+      } else {
+        page.notice.hideError();
+        page.notice.setNotice('failed to load preview');
+      }
+    } catch (err) {
+      page.notice.hideError();
+      page.notice.setNotice('failed to load preview');
+      console.log(err);
+    }
+    _setCopyControls();
+    
+    return success;
+  }
+  
+  function _clearPreview() {
+    var container = document.getElementById('previewContainer');
+
+    container.style.display = 'none';
+    while (container.firstChild) container.removeChild(container.firstChild);
+
+    _setCopyControls();
+  }
+  
+  function _previewShowing() {
+    return document.getElementById('previewContainer').firstChild != null;
+  }
+  
+  function _setCopyControls() {
+    var display = 'none';
+    if (_previewShowing()) display = 'inline-block';
+    
+    document.getElementById('iconLink').style.display = display;
+    document.getElementById('iconEmbedLeft').style.display = display;
+    document.getElementById('iconEmbedRight').style.display = display;
   }
               
 	//------------------------------------------------------------------
@@ -117,15 +190,14 @@ const app = function () {
   
   function _makeAndCopyEmbed() {
     var instance = document.getElementById('inputInstance').value;
+    var container = document.getElementById('innerPreviewContainer');
+    var width = document.getElementById('inputWidth').value;
 
-    var embedCode = '<p>';
-    embedCode += '<script type="text/javascript" src="' + resizerScript + '"></script>';
-    embedCode += '</p>';
-    
+    var embedCode = '';
     embedCode += '<p>';
     embedCode += '<iframe id="iframe-aqrp' + instance + '"';
-    embedCode += ' width="60%"';
-    embedCode += ' height="200"';
+    embedCode += ' width="' + width + '%"';
+    embedCode += ' height="' + (container.scrollHeight + 40) + '"';
     embedCode += ' src="' + _makeURL() + '"';
     embedCode += ' allowfullscreen';
     embedCode += ' allow="microphone"';
@@ -148,6 +220,17 @@ const app = function () {
     return url;
   }
   
+  function _getIdFromLink(strLink) {
+    var id = '';
+    
+    var splitId = strLink.match(/\?id=([a-zA-Z0-9-_]+)/);
+    if (splitId != null) {
+      id = splitId[0].slice(4);
+    }
+    
+    return id;
+  }
+  
   //---------------------------------------
   // clipboard functions
   //----------------------------------------
@@ -162,6 +245,17 @@ const app = function () {
 	//----------------------------------------
   function _handleGeneric() {
     page.notice.setNotice('');
+  }
+  
+  function _handleSlidesLinkChange(e) {
+    _clearPreview();
+  }
+  
+  function _handleWidthSelectChange() {
+    if (_previewShowing()) {
+      var width = document.getElementById('inputWidth').value;
+      document.getElementById('innerPreviewContainer').style.width = width + '%';
+    }
   }
   
   function _handleLinkClick() {

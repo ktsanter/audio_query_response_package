@@ -1,21 +1,6 @@
-.arp-colorscheme {
-  --MV-white: #ffffff;
-  --MV-black: #000000;
-  --MV-light-teal: #2f8d98;
-  --MV-dark-teal: #115e63;
-  --MV-deep-teal: #093c44;
-  --MV-green: #b5cd34;
-  --MV-orange: #f7941e;
-  --MV-light-gray: #6d6e71;
-  --MV-dark-gray: #414042;
-  --MV-blue: blue;
-  --light-gray2: #f2f2f2;
-  --very-light-gray: #dddddd;
-}
-
-body {
-	color: var(--MV-black);
-	background-color: var(--MV-green);
+#aqrpBody {
+	color: black;
+	background-color: #b5cd34;
 	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 	font-size: 13px;
 	margin-left: 12px;
@@ -35,8 +20,8 @@ body {
 }
 
 .item-container {
-  background-color: var(--MV-white);
-  border: 1px solid var(--very-light-gray);
+  background-color: white;
+  border: 1px solid #ddd
   border-radius: 6px;
   margin-bottom: 8px;
 }
@@ -60,7 +45,7 @@ body {
 
 .record-control {
   font-size: 20px;
-  border: 1px solid var(--MV-light-gray);
+  border: 1px solid #6d6e71;
   border-radius: 6px;
   margin-bottom: 2px;
   margin-right: 2px;
@@ -68,7 +53,7 @@ body {
 }
 
 .record-control:disabled {
-  background-color: var(--MV-dark-gray);
+  background-color: #414042;
 }
 
 .start-recording {
@@ -96,13 +81,13 @@ body {
 
 .play-control, .playprompt-control, .delete-control {
   font-size: 20px;
-  border: 1px solid var(--MV-light-gray);
+  border: 1px solid #6d6e71;
   border-radius: 6px;
   margin-left: 2px;
 }
 
 .play-control:disabled, .playprompt-control:disabled {
-  background-color: var(--MV-dark-gray);
+  background-color: #414042;
 }
 
 .playprompt-control {
@@ -112,15 +97,15 @@ body {
 
 .package-control {
   font-size: 20px;
-  border: 1px solid var(--MV-light-gray);
+  border: 1px solid #414042;
   border-radius: 6px;
   background-color: lightgreen;
   padding: 0px 2px 2px 2px;
 }
 
 .package-control:disabled {
-  background-color: var(--MV-light-gray);
-  border: 1px solid var(--MV-black);
+  background-color: #414042;
+  border: 1px solid black;
 }
 
 /*-- standard error and notice tools --*/
