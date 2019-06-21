@@ -53,8 +53,14 @@ const app = function () {
     var title = CreateElement.createDiv(null, 'standard-title', appname);
     
     title.appendChild(CreateElement.createIcon('iconLink', 'fas fa-link', 'copy link to clipboard', _handleLinkClick));
-    title.appendChild(CreateElement.createIcon('iconEmbedLeft', 'fas fa-angle-left', 'copy embed code to clipboard', _handleEmbedClick));
-    title.appendChild(CreateElement.createIcon('iconEmbedRight', 'fas fa-angle-right', 'copy embed code to clipboard', _handleEmbedClick));
+    
+    var controlcontainer = CreateElement.createSpan('title-controls', null);
+    title.appendChild(controlcontainer);
+    controlcontainer.title = 'copy embed code to clipboard';
+    controlcontainer.addEventListener('click', _handleEmbedClick, false);
+    controlcontainer.appendChild(CreateElement.createIcon('iconEmbedLeft', 'fas fa-angle-left', 'copy embed code to clipboard', _handleEmbedClick));
+    controlcontainer.appendChild(CreateElement.createIcon('iconEmbedRight', 'fas fa-angle-right', 'copy embed code to clipboard', _handleEmbedClick));
+    
     title.appendChild(CreateElement.createDiv('appVersion', null, 'v' + appversion));
     
     return title;

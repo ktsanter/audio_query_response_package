@@ -52,7 +52,7 @@ class AudioQueryResponsePackage {
 	// page rendering
 	//-----------------------------------------------------------------------------  
   async render() {
-    this._contents = CreateElement.createDiv(null, 'contents');
+    this._contents = CreateElement.createDiv(null, 'arp-maincontents');
     
     this._notice = new StandardNotice(this._contents, this._contents);
     this._notice._normalNoticeContainer.style.display = 'none';
