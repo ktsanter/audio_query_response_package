@@ -8,7 +8,7 @@ class AudioQueryResponsePackage {
   constructor (config) {
     this._config = config;
     
-    this._maincontainer = {};
+    //this._maincontainer = {};
     
     this._AUDIO_MIMETYPE = 'audio/webm';
     this._AUDIO_FILETYPE_EXTENSION_FIREFOX = '.ogg';
@@ -48,9 +48,9 @@ class AudioQueryResponsePackage {
     };
   }  
 	
-	//-----------------------------------------------------------------------------
-	// page rendering
-	//-----------------------------------------------------------------------------  
+  //-----------------------------------------------------------------------------
+  // page rendering
+  //-----------------------------------------------------------------------------  
   async render() {
     this._contents = CreateElement.createDiv(null, 'arp-maincontents');
     
@@ -69,7 +69,8 @@ class AudioQueryResponsePackage {
       attachTo.appendChild(this._renderTitle(this._config.title));
       attachTo.appendChild(this._renderInstructions(this._config.instructions));
       attachTo.appendChild(this._renderItems(this._config.items));  
-      attachTo.appendChild(this._createPackageControl());      
+      attachTo.appendChild(this._createPackageControl());
+      this._setPackageButtonEnable();
     }
   }
   
@@ -170,7 +171,7 @@ class AudioQueryResponsePackage {
     var buttontitle = 'download recordings in a ZIP file - only available once all recordings are completed';
     var packagebutton = CreateElement.createButton(null, 'package-control', this._DOWNLOAD_SYMBOL, buttontitle, e => this._packageButtonHandler(e.target));
     container.appendChild(packagebutton)
-    this._maincontainer.packagebutton = packagebutton;
+    this._packagebutton = packagebutton;
 
     var downloadlink = CreateElement.createLink(null, null);
     container.appendChild(downloadlink);
@@ -262,17 +263,20 @@ class AudioQueryResponsePackage {
   }
 
   _setPackageButtonEnable() {
+    console.log('in prog: ' + this._settings.recordinginprogress);
     var enable = (this._settings.recordinginprogress < 0);
     
     for (var i = 0; i < this._settings.mp3blobs.length && enable; i++) {
+      console.log('mp3: ' + this._settings.mp3blobs[i]);
       enable = (this._settings.mp3blobs[i] != null);
     }
-    this._maincontainer.packagebutton.disabled = !enable;
+    console.log('enable=' + enable);
+    this._packagebutton.disabled = !enable;
   }
 
-	//-----------------------------------------------------------------------------
-	// audio setup and management
-	//-----------------------------------------------------------------------------  
+  //-----------------------------------------------------------------------------
+  // audio setup and management
+  //-----------------------------------------------------------------------------  
   async _configureAudio() {    
   /*  try {*/
       var stream = await navigator.mediaDevices.getUserMedia({audio:true});
@@ -394,7 +398,7 @@ class AudioQueryResponsePackage {
   }
   
   _audioPromptEnded(elemTarget) {
-    var elemNumber = _getElementNumber(elemTarget);
+    var elemNumber = this._getElementNumber(elemTarget);
     var elemPlayPromptButton = this._settings.audiopromptplaycontrols[elemNumber];
     this._setPromptPlayButtonStyling(elemPlayPromptButton, 'play');    
   }
@@ -457,9 +461,9 @@ class AudioQueryResponsePackage {
     });
   }
   
-	//------------------------------------------------------------------
-	// handlers
-	//------------------------------------------------------------------
+  //------------------------------------------------------------------
+  // handlers
+  //------------------------------------------------------------------
   _recordButtonHandler(elemTarget) {
     var classes = elemTarget.classList;
     
@@ -496,9 +500,9 @@ class AudioQueryResponsePackage {
     this._audioEnded(elemTarget);
   }
   
-	//---------------------------------------
-	// utility functions
-	//----------------------------------------  
+  //---------------------------------------
+  // utility functions
+  //----------------------------------------  
   _getElementNumber(elem) {
     return parseInt(('000' + elem.id).slice(-3));
   }
