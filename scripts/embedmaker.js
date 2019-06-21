@@ -112,6 +112,7 @@ const app = function () {
     embedCode += ' height="200"';
     embedCode += ' src="' + _makeURL() + '"';
     embedCode += ' allowfullscreen';
+    embedCode += ' allow="microphone"';
     embedCode += '>';
     embedCode += '</iframe>';
     embedCode += '</p>';

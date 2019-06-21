@@ -96,10 +96,10 @@ body {
 }
 
 .standard-notice {
-  float: right;  
+  display: inline-block;
   font-size: 0.9em;
   font-style: italic;
-  margin-left: 0.4em;
+  margin-left: 1.0em;
   margin-right: 0.2em;
 }
 
