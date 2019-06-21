@@ -1,6 +1,7 @@
 .arp-maincontents {
   font-family: "Segoe UI", Tahoe, Arial, sans-serif;
-  background: linear-gradient(to left top, rgba(80,117,178,1) 0%, rgba(138,181,252,1) 100%);
+ /* background: linear-gradient(to left top, rgba(80,117,178,1) 0%, rgba(138,181,252,1) 100%);*/
+  background-color:  rgba(138,181,252,1);
   border-radius: 6px 6px 0px 0px;
   padding: 0.2em 0.4em;
 }
