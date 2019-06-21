@@ -41,6 +41,7 @@ const app = function () {
     page.container.appendChild(container);
     
     container.appendChild(_renderControls());
+    container.appendChild(_renderPreviewSection());
   }
   
   function _renderTitle() {
@@ -72,9 +73,11 @@ const app = function () {
     container.appendChild(CreateElement.createDiv(null, 'control-label', 'slides link'));
     var textinput = CreateElement.createTextInput('inputSlidesLink', null);
     container.appendChild(textinput);
-    textinput.size = 120;
+    textinput.size = 80;
     textinput.addEventListener('click', _handleGeneric, false);
     textinput.title = 'shared link to the Google Sheet with the configuration information';
+    
+    container.appendChild(CreateElement.createButton(null, null, 'preview', null, _handlePreviewClick));
     
     return container;
   }
@@ -89,6 +92,19 @@ const app = function () {
     spininput.title = 'the instance number must be unique for every dialog on a page';
     
     return container;
+  }
+  
+  function _renderPreviewSection() {
+    var container = CreateElement.createDiv('previewContainer', null, 'preview');
+    
+    return container;
+  }
+  
+  function _previewPackage() {
+    var slideslink = document.getElementById('inputSlidesLink').value;
+    var container = document.getElementById('previewContainer');
+
+    container.innerHTML = 'preview "' + slideslink + '"';
   }
               
 	//------------------------------------------------------------------
@@ -154,6 +170,10 @@ const app = function () {
   
   function _handleEmbedClick() {
     _makeAndCopyEmbed();
+  }
+  
+  function _handlePreviewClick() {
+    _previewPackage();
   }
   
 	//---------------------------------------

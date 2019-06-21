@@ -87,6 +87,10 @@ body {
   font-size: 0.9em;
 }
 
+#previewContainer {
+  border: 1px solid #ccc;
+}
+
 /*-- standard error and notice tools --*/
 .standard_error {
   display: none;
