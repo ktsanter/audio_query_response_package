@@ -66,12 +66,16 @@
 .redo-recording {}
 
 .package-control {
-  background-color: #3ad637;
+  /*background-color: #3ad637;*/
+  display: inline-block;
 }
 
 .package-control-disabled {
+  /*
   background-color: #ccc;
   cursor: not-allowed;
+  */
+  display: none;
 }
 
 /*-- standard error and notice tools --*/

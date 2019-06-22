@@ -58,8 +58,8 @@ const app = function () {
     title.appendChild(controlcontainer);
     controlcontainer.title = 'copy embed code to clipboard';
     controlcontainer.addEventListener('click', _handleEmbedClick, false);
-    controlcontainer.appendChild(CreateElement.createIcon('iconEmbedLeft', 'fas fa-angle-left', 'copy embed code to clipboard', _handleEmbedClick));
-    controlcontainer.appendChild(CreateElement.createIcon('iconEmbedRight', 'fas fa-angle-right', 'copy embed code to clipboard', _handleEmbedClick));
+    controlcontainer.appendChild(CreateElement.createIcon('iconEmbedLeft', 'fas fa-angle-left', 'copy embed code to clipboard'));//, _handleEmbedClick));
+    controlcontainer.appendChild(CreateElement.createIcon('iconEmbedRight', 'fas fa-angle-right', 'copy embed code to clipboard'));//, _handleEmbedClick));
     
     title.appendChild(CreateElement.createDiv('appVersion', null, 'v' + appversion));
     
@@ -143,8 +143,8 @@ const app = function () {
         var innerContainer = CreateElement.createDiv('innerPreviewContainer', null);
         container.appendChild(innerContainer);
         
-        var aqrp = new AudioQueryResponsePackage(requestResult.data);
-        innerContainer.appendChild(await aqrp.render());
+        page.aqrp = new AudioQueryResponsePackage(requestResult.data);
+        innerContainer.appendChild(await page.aqrp.render());
         innerContainer.style.width = widthpercent + '%';
         
         container.style.display = 'block';
@@ -198,12 +198,17 @@ const app = function () {
     var instance = document.getElementById('inputInstance').value;
     var container = document.getElementById('innerPreviewContainer');
     var width = document.getElementById('inputWidth').value;
+    
+    var replaceDisable = page.aqrp._packagebutton.classList.contains('package-control-disabled');
+    if (replaceDisable) page.aqrp._packagebutton.classList.remove('package-control-disabled');
+    var height = container.scrollHeight;
+    if (replaceDisable) page.aqrp._packagebutton.classList.add('package-control-disabled');
 
     var embedCode = '';
     embedCode += '<p>';
     embedCode += '<iframe id="iframe-aqrp' + instance + '"';
     embedCode += ' width="' + width + '%"';
-    embedCode += ' height="' + (container.scrollHeight + 50) + '"';
+    embedCode += ' height="' + (height + 20) + '"';
     embedCode += ' src="' + _makeURL() + '"';
     embedCode += ' allowfullscreen';
     embedCode += ' allow="microphone"';

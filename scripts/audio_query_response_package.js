@@ -26,7 +26,7 @@ class AudioQueryResponsePackage {
     this._STOP_SYMBOL = '⏹️';
     
     this._DELETE_ICON = 'delete-control far fa-trash-alt';
-    this._DOWNLOAD_ICON = 'package-control fas fa-file-download';
+    this._DOWNLOAD_ICON = 'package-control far fa-arrow-alt-circle-down';
     
     this._settings = {
       sourcefileid: null,
@@ -173,7 +173,7 @@ class AudioQueryResponsePackage {
   _createPackageControl() {
     var container = CreateElement.createDiv(null, null);
     
-    var buttontitle = 'download recordings in a ZIP file - only available once all recordings are completed';
+    var buttontitle = 'download recordings in a ZIP file';
     var packagebutton = CreateElement.createIcon(null, this._DOWNLOAD_ICON, buttontitle, e => this._packageButtonHandler(e.target));
     container.appendChild(packagebutton)
     this._packagebutton = packagebutton;
@@ -214,7 +214,6 @@ class AudioQueryResponsePackage {
       }
     }
     
-    console.log(stageName);
     var buttonText = this._settings.recordbuttonstyling[stageName].buttontext;
     var buttonClass = this._settings.recordbuttonstyling[stageName].buttonclass;
     var buttonHoverText = this._settings.recordbuttonstyling[stageName].hovertext;
@@ -293,6 +292,15 @@ class AudioQueryResponsePackage {
       this._settings.playcontrols[i].disabled = !enable;
     }
   }
+  
+  _hidePlayAndDeleteButtons() {
+    for (var i = 0; i < this._settings.playcontrols.length; i++) {
+      this._settings.playcontrols[i].style.display = 'none';
+    }
+    for (var i = 0; i < this._settings.deletecontrols.length; i++) {
+      this._settings.deletecontrols[i].style.display = 'none';
+    }
+  }
 
   _setPackageButtonEnable() {
     var disableClass = 'package-control-disabled'
@@ -345,8 +353,9 @@ class AudioQueryResponsePackage {
     try {
       var elemNumber = this._getElementNumber(elemTarget);
       this._settings.recordinginprogress = elemNumber;
-      this._setRecordButtonStyling(elemTarget, 'stop')
+      this._setRecordButtonStyling(elemTarget, 'stop');
       this._enablePlayButtons(false);
+      this._hidePlayAndDeleteButtons();
       this._setPackageButtonEnable();
       this._settings.audiochunks[elemNumber] = [];
       this._settings.mediarecorder[elemNumber].start();
