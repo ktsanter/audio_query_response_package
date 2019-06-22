@@ -16,12 +16,17 @@ class AudioQueryResponsePackage {
     
     this._NO_VALUE = '[none]';
 
-    this._RECORD_SYMBOL = '⏺️';  
-    this._PLAY_SYMBOL = '▶️';
-    this._PAUSE_SYMBOL = '⏸️';
+    this._PLAYPROMPT_ICON = 'play-audio playprompt-control far fa-play-circle';
+    this._PAUSEPROMPT_ICON = 'pause-audio pauseprompt-control far fa-pause-circle';
+    this._PLAY_ICON = 'play-audio play-control far fa-play-circle';
+    this._PAUSE_ICON = 'pause-audio pause-control far fa-pause-circle';
+    this._RECORD_ICON = 'record-control fas fa-microphone';
+    this._NO_RECORD_ICON = 'record-control fas fa-microphone-slash';
+    this._STOP_RECORD_ICON = 'record-control far fa-stop-circle';
     this._STOP_SYMBOL = '⏹️';
-    this._TRASH_SYMBOL = '🗑️';
-    this._DOWNLOAD_SYMBOL = '⬇️';
+    
+    this._DELETE_ICON = 'delete-control far fa-trash-alt';
+    this._DOWNLOAD_ICON = 'package-control fas fa-file-download';
     
     this._settings = {
       sourcefileid: null,
@@ -36,13 +41,13 @@ class AudioQueryResponsePackage {
       audiopromptplaycontrols: [],
       deletecontrols: [],
       recordbuttonstyling: {
-        'start': {buttontext: this._RECORD_SYMBOL, buttonclass: 'start-recording', hovertext: 'start recording'},
-        'stop': {buttontext: this._STOP_SYMBOL, buttonclass: 'stop-recording', hovertext: 'stop recording'},
-        'redo': {buttontext: this._RECORD_SYMBOL, buttonclass: 'redo-recording', hovertext: 'redo recording'}
+        'start': {buttontext: null, buttonclass: 'start-recording', hovertext: 'start recording'},
+        'stop': {buttontext: null, buttonclass: 'stop-recording', hovertext: 'stop recording'},
+        'redo': {buttontext: null, buttonclass: 'redo-recording', hovertext: 'redo recording'}
       },
       playbuttonstyling: {
-        'play': {buttontext: this._PLAY_SYMBOL, buttonclass: 'play-audio', hovertext: 'play recording'},
-        'pause': {buttontext: this._PAUSE_SYMBOL, buttonclass: 'pause-audio', hovertext: 'pause recording'}
+        'play': {buttontext: null, buttonclass: 'play-audio', hovertext: 'play recording'},
+        'pause': {buttontext: null, buttonclass: 'pause-audio', hovertext: 'pause recording'}
       },
       recordinginprogress: -1
     };
@@ -119,7 +124,7 @@ class AudioQueryResponsePackage {
       elemAudio.onended = e => this._audioPromptEndedHandler(e.target);
       container.appendChild(elemAudio);
 
-     var playbutton = CreateElement.createButton(this._numberElementId('btnPlayPrompt', index), 'playprompt-control', null, null, e => this._playPromptButtonHandler(e.target));
+      var playbutton = CreateElement.createIcon(this._numberElementId('btnPlayPrompt', index), this._PLAYPROMPT_ICON, null, e => this._playPromptButtonHandler(e.target));
       container.appendChild(playbutton);
       this._setPromptPlayButtonStyling(playbutton, 'play');
      
@@ -128,7 +133,7 @@ class AudioQueryResponsePackage {
     }
     
     if (item.textprompt != this._NO_VALUE && item.textprompt != null && item.textprompt != '') {
-      var textPrompt = CreateElement.createSpan(null, null, MarkdownToHTML.convert(item.textprompt));
+      var textPrompt = CreateElement.createSpan(null, 'item-prompt-text', MarkdownToHTML.convert(item.textprompt));
       container.appendChild(textPrompt);
     }
 
@@ -138,7 +143,7 @@ class AudioQueryResponsePackage {
   _renderResponse(index, item) {
     var container = CreateElement.createDiv(null, 'item-response');
     
-    var recordbutton = CreateElement.createButton(this._numberElementId('btnRecording', index), 'record-control', null, null, e => this._recordButtonHandler(e.target));
+    var recordbutton = CreateElement.createIcon(this._numberElementId('btnRecording', index), this._RECORD_ICON, null, e => this._recordButtonHandler(e.target));
     container.appendChild(recordbutton);
     this._settings.recordcontrols.push(recordbutton);
     this._setRecordButtonStyling(recordbutton, 'start');
@@ -152,11 +157,11 @@ class AudioQueryResponsePackage {
     elemAudio.onended = e => this._audioEndedHandler(e.target);
     this._settings.audiocontrols.push(elemAudio);
 
-    var playbutton = CreateElement.createButton(this._numberElementId('btnPlay', index), 'play-control', null, null, e => this._playButtonHandler(e.target));
+    var playbutton = CreateElement.createIcon(this._numberElementId('btnPlay', index), this._PLAY_ICON, null, e => this._playButtonHandler(e.target));
     container.appendChild(playbutton);
     this._settings.playcontrols.push(playbutton);
     
-    var deletebutton = CreateElement.createButton(this._numberElementId('btnDelete', index), 'delete-control', this._TRASH_SYMBOL, 'delete recording', e => this._deleteButtonHandler(e.target));
+    var deletebutton = CreateElement.createIcon(this._numberElementId('btnDelete', index), this._DELETE_ICON, 'delete recording', e => this._deleteButtonHandler(e.target));
     container.appendChild(deletebutton);
     this._settings.deletecontrols.push(deletebutton);
     
@@ -169,15 +174,16 @@ class AudioQueryResponsePackage {
     var container = CreateElement.createDiv(null, null);
     
     var buttontitle = 'download recordings in a ZIP file - only available once all recordings are completed';
-    var packagebutton = CreateElement.createButton(null, 'package-control', this._DOWNLOAD_SYMBOL, buttontitle, e => this._packageButtonHandler(e.target));
+    var packagebutton = CreateElement.createIcon(null, this._DOWNLOAD_ICON, buttontitle, e => this._packageButtonHandler(e.target));
     container.appendChild(packagebutton)
     this._packagebutton = packagebutton;
 
+    // hidden link to trigger ZIP and download
     var downloadlink = CreateElement.createLink(null, null);
     container.appendChild(downloadlink);
     downloadlink.download = this._config.downloadfilename + ".zip";
     downloadlink.innerHTML = 'for downloading';
-    downloadlink.href = ''; // intentionally blank
+    downloadlink.href = '';
     downloadlink.style.display = 'none';    
     this._downloadelement = downloadlink;
   
@@ -188,28 +194,52 @@ class AudioQueryResponsePackage {
 	// control styling, visibility, and enabling
 	//-----------------------------------------------------------------------------  
   _setRecordButtonStyling(elemTarget, stageName) {
+    var disableClass = 'record-control-disabled';
     var recordButtons = this._settings.recordcontrols;
     for (var i = 0; i < recordButtons.length; i++) {
       var elemButton = recordButtons[i];
       var elemNumber = this._getElementNumber(elemButton);
       if( this._settings.recordinginprogress >= 0) {
-        elemButton.disabled = (elemNumber != this._settings.recordinginprogress);
+        if (elemNumber != this._settings.recordinginprogress) {
+          elemButton.classList.add(disableClass);
+          this._replaceClasses(elemButton, this._RECORD_ICON, this._NO_RECORD_ICON);
+          elemButton.disabled = true;
+        }
       } else {
+        if (elemButton.classList.contains(disableClass)) {
+          elemButton.classList.remove(disableClass);
+        }
+        this._replaceClasses(elemButton, this._NO_RECORD_ICON, this._RECORD_ICON);
         elemButton.disabled = false;
       }
     }
     
+    console.log(stageName);
+    var buttonText = this._settings.recordbuttonstyling[stageName].buttontext;
+    var buttonClass = this._settings.recordbuttonstyling[stageName].buttonclass;
+    var buttonHoverText = this._settings.recordbuttonstyling[stageName].hovertext;
+
+    elemTarget.innerHTML = buttonText;
+    elemTarget.title = buttonHoverText;
+
     var buttonText = this._settings.recordbuttonstyling[stageName].buttontext;
     var buttonClass = this._settings.recordbuttonstyling[stageName].buttonclass;
     var buttonHoverText = this._settings.recordbuttonstyling[stageName].hovertext;
     
+    elemTarget.innerHTML = buttonText;
+    elemTarget.title = buttonHoverText;
+
     for (var prop in this._settings.recordbuttonstyling) {
       var className = this._settings.recordbuttonstyling[prop].buttonclass;
       if (elemTarget.classList.contains(className)) elemTarget.classList.remove(className);
     }
-    elemTarget.innerHTML = buttonText;
     elemTarget.classList.add(buttonClass);
-    elemTarget.title = buttonHoverText;
+    
+    if (stageName == 'stop') {
+      this._replaceClasses(elemTarget, this._RECORD_ICON, this._STOP_RECORD_ICON);
+    } else {
+      this._replaceClasses(elemTarget, this._STOP_RECORD_ICON, this._RECORD_ICON);
+    }
   }
     
   _setPlayButtonStyling(elemTarget, stageName) {
@@ -233,27 +263,29 @@ class AudioQueryResponsePackage {
     var buttonClass = this._settings.playbuttonstyling[stageName].buttonclass;
     var buttonHoverText = this._settings.playbuttonstyling[stageName].hovertext;
     
-    for (var prop in this._settings.playbuttonstyling) {
-      var className = this._settings.playbuttonstyling[prop].buttonclass;
-      if (elemTarget.classList.contains(className)) elemTarget.classList.remove(className);
-    }
     elemTarget.innerHTML = buttonText;
-    elemTarget.classList.add(buttonClass);
     elemTarget.title = buttonHoverText;
+    if (stageName == 'play') {
+      this._replaceClasses(elemTarget, this._PAUSE_ICON, this._PLAY_ICON);
+    } else {
+      this._replaceClasses(elemTarget, this._PLAY_ICON, this._PAUSE_ICON);
+    }
   }
   
   _setPromptPlayButtonStyling(elemTarget, stageName) {
     var buttonText = this._settings.playbuttonstyling[stageName].buttontext;
     var buttonClass = this._settings.playbuttonstyling[stageName].buttonclass;
     var buttonHoverText = this._settings.playbuttonstyling[stageName].hovertext;
-    
-    for (var prop in this._settings.playbuttonstyling) {
-      var className = this._settings.playbuttonstyling[prop].buttonclass;
-      if (elemTarget.classList.contains(className)) elemTarget.classList.remove(className);
-    }
+
     elemTarget.innerHTML = buttonText;
-    elemTarget.classList.add(buttonClass);
     elemTarget.title = buttonHoverText;
+    if (stageName == 'play') {
+      this._removeClasses(elemTarget, this._PAUSEPROMPT_ICON);
+      CreateElement.addClassList(elemTarget, this._PLAYPROMPT_ICON);
+    } else {
+      this._removeClasses(elemTarget, this._PLAY_ICON);
+      CreateElement.addClassList(elemTarget, this._PAUSEPROMPT_ICON);
+    }
   }
   
   _enablePlayButtons(enable) {
@@ -263,30 +295,35 @@ class AudioQueryResponsePackage {
   }
 
   _setPackageButtonEnable() {
-    console.log('in prog: ' + this._settings.recordinginprogress);
+    var disableClass = 'package-control-disabled'
     var enable = (this._settings.recordinginprogress < 0);
     
     for (var i = 0; i < this._settings.mp3blobs.length && enable; i++) {
-      console.log('mp3: ' + this._settings.mp3blobs[i]);
       enable = (this._settings.mp3blobs[i] != null);
     }
-    console.log('enable=' + enable);
+    
     this._packagebutton.disabled = !enable;
+    if (enable) {
+      if (this._packagebutton.classList.contains(disableClass)) {
+        this._packagebutton.classList.remove(disableClass);
+      }
+    } else {
+      this._packagebutton.classList.add(disableClass);
+    }
   }
 
   //-----------------------------------------------------------------------------
   // audio setup and management
   //-----------------------------------------------------------------------------  
   async _configureAudio() {    
-  /*  try {*/
+    try {
       var stream = await navigator.mediaDevices.getUserMedia({audio:true});
       await this._configureAudioControls(stream);
-/*
+
     } catch (error) {
       this._settings.streamavailable = false;
       this._notice.reportError('_configureAudio', error);
     }
-    */
   }
   
   _configureAudioControls(stream) {
@@ -298,15 +335,9 @@ class AudioQueryResponsePackage {
       this._settings.mediarecorder.push(thisRecorder);
       this._settings.audiochunks.push(thisChunks);
       this._settings.mp3blobs.push(null);
-      //function (me, f) { return function(e) {me._doMenuOption(f);}} (this, menuOptions[i].callback);
+
       var handler = function (me) { var j = i; return function(e) {me._finishRecording(e, j);}} (this);
       thisRecorder.ondataavailable = handler;
-      /*
-      thisRecorder.ondataavailable = (function(me, e) {
-        var j = i;
-        return function(e) {me._finishRecording(e, j);}
-      })(this);
-      */
     }
   }
   
@@ -339,7 +370,16 @@ class AudioQueryResponsePackage {
 
   _redoRecording(elemTarget) {
     var prompt = 'There is already a recording for this item.\nClick "OK" if you would like to make a new one';
-    if (confirm(prompt)) this._startRecording(elemTarget);
+    if (confirm(prompt)) {
+      var elemNumber = this._getElementNumber(elemTarget);
+      var deletebutton = this._settings.deletecontrols[elemNumber];
+      var playbutton = this._settings.playcontrols[elemNumber];
+      
+      playbutton.style.display = 'none';
+      deletebutton.style.display = 'none';      
+      
+      this._startRecording(elemTarget);
+    }
   }
 
   _deleteRecordingOnConfirm(elemTarget) {
@@ -349,6 +389,7 @@ class AudioQueryResponsePackage {
       this._settings.mp3blobs[elemNumber] = null;
       this._setRecordButtonStyling(this._settings.recordcontrols[elemNumber], 'start');
       this._setPlayButtonStyling(this._settings.playcontrols[elemNumber], 'play');
+
       this._setPackageButtonEnable();
     }
   }
@@ -378,7 +419,6 @@ class AudioQueryResponsePackage {
   _playPromptRecording(elemTarget) {  
     var elemNumber = this._getElementNumber(elemTarget);
     var elemAudio = this._settings.audiopromptcontrols[elemNumber];
-
     var stage, nextStage;
     if (elemTarget.classList.contains(this._settings.playbuttonstyling.play.buttonclass)) {
       stage = 'play';
@@ -406,7 +446,7 @@ class AudioQueryResponsePackage {
   _playRecording(elemTarget) {  
     var elemNumber = this._getElementNumber(elemTarget);
     var mp3blob = this._settings.mp3blobs[elemNumber];
-    
+
     if (mp3blob != null) {
       var elemAudio = this._settings.audiocontrols[elemNumber];
       var stage, nextStage;
@@ -465,6 +505,8 @@ class AudioQueryResponsePackage {
   // handlers
   //------------------------------------------------------------------
   _recordButtonHandler(elemTarget) {
+    if (elemTarget.disabled) return;
+    
     var classes = elemTarget.classList;
     
     if (classes.contains(this._settings.recordbuttonstyling['start'].buttonclass)) {
@@ -477,26 +519,32 @@ class AudioQueryResponsePackage {
   }    
   
   _deleteButtonHandler(elemTarget) {
+    if (elemTarget.disabled) return;
     this._deleteRecordingOnConfirm(elemTarget);
   }
   
   _packageButtonHandler(elemTarget) {
+    if (elemTarget.disabled) return;
     this._packageAudioRecordings();
   }
   
   _playPromptButtonHandler(elemTarget) {
+    if (elemTarget.disabled) return;
     this._playPromptRecording(elemTarget);
   }
   
   _audioPromptEndedHandler(elemTarget) {
+    if (elemTarget.disabled) return;
     this._audioPromptEnded(elemTarget);
   }
 
   _playButtonHandler(elemTarget) {
+    if (elemTarget.disabled) return;
     this._playRecording(elemTarget);
   }
   
   _audioEndedHandler(elemTarget) {
+    if (elemTarget.disabled) return;
     this._audioEnded(elemTarget);
   }
   
@@ -511,5 +559,17 @@ class AudioQueryResponsePackage {
     return  base + ('000' + index).slice(-3);
   }
 
+  _replaceClasses(elem, removeList, addList) {
+    this._removeClasses(elem, removeList);
+    CreateElement.addClassList(elem, addList);
+  }
+  
+  _removeClasses(elem, removeList) {
+    var splitList = removeList.split(' ');
+    for (var i = 0; i < splitList.length; i++) {
+      var className = splitList[i].trim();
+      if (className != '' && elem.classList.contains(className)) elem.classList.remove(className);
+    }
+  }
 }
 
