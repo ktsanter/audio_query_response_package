@@ -8,8 +8,6 @@ class AudioQueryResponsePackage {
   constructor (config) {
     this._config = config;
     
-    //this._maincontainer = {};
-    
     this._AUDIO_MIMETYPE = 'audio/webm';
     this._AUDIO_FILETYPE_EXTENSION_FIREFOX = '.ogg';
     this._AUDIO_FILETYPE_EXTENSION_CHROME = '.webm';
@@ -49,7 +47,8 @@ class AudioQueryResponsePackage {
         'play': {buttontext: null, buttonclass: 'play-audio', hovertext: 'play recording'},
         'pause': {buttontext: null, buttonclass: 'pause-audio', hovertext: 'pause recording'}
       },
-      recordinginprogress: -1
+      recordinginprogress: -1,
+      tabindex: 100
     };
   }  
 	
@@ -126,6 +125,7 @@ class AudioQueryResponsePackage {
 
       var playbutton = CreateElement.createIcon(this._numberElementId('btnPlayPrompt', index), this._PLAYPROMPT_ICON, null, e => this._playPromptButtonHandler(e.target));
       container.appendChild(playbutton);
+      this._addTabIndex(playbutton);
       this._setPromptPlayButtonStyling(playbutton, 'play');
      
       this._settings.audiopromptcontrols.push(elemAudio);
@@ -145,6 +145,7 @@ class AudioQueryResponsePackage {
     
     var recordbutton = CreateElement.createIcon(this._numberElementId('btnRecording', index), this._RECORD_ICON, null, e => this._recordButtonHandler(e.target));
     container.appendChild(recordbutton);
+    this._addTabIndex(recordbutton);
     this._settings.recordcontrols.push(recordbutton);
     this._setRecordButtonStyling(recordbutton, 'start');
     
@@ -159,10 +160,12 @@ class AudioQueryResponsePackage {
 
     var playbutton = CreateElement.createIcon(this._numberElementId('btnPlay', index), this._PLAY_ICON, null, e => this._playButtonHandler(e.target));
     container.appendChild(playbutton);
+    this._addTabIndex(playbutton);
     this._settings.playcontrols.push(playbutton);
     
     var deletebutton = CreateElement.createIcon(this._numberElementId('btnDelete', index), this._DELETE_ICON, 'delete recording', e => this._deleteButtonHandler(e.target));
     container.appendChild(deletebutton);
+    this._addTabIndex(deletebutton);
     this._settings.deletecontrols.push(deletebutton);
     
     this._setPlayButtonStyling(playbutton, 'play');
@@ -176,6 +179,7 @@ class AudioQueryResponsePackage {
     var buttontitle = 'download recordings in a ZIP file';
     var packagebutton = CreateElement.createIcon(null, this._DOWNLOAD_ICON, buttontitle, e => this._packageButtonHandler(e.target));
     container.appendChild(packagebutton)
+    this._addTabIndex(packagebutton);
     this._packagebutton = packagebutton;
 
     // hidden link to trigger ZIP and download
@@ -580,5 +584,9 @@ class AudioQueryResponsePackage {
       if (className != '' && elem.classList.contains(className)) elem.classList.remove(className);
     }
   }
+  
+  _addTabIndex(elem) {
+    elem.tabIndex = this._settings.tabindex++;
+  }  
 }
 
