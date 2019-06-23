@@ -44,8 +44,10 @@ class AudioQueryResponsePackage {
         'redo': {buttontext: null, buttonclass: 'redo-recording', hovertext: 'redo recording'}
       },
       playbuttonstyling: {
-        'play': {buttontext: null, buttonclass: 'play-audio', hovertext: 'play recording'},
-        'pause': {buttontext: null, buttonclass: 'pause-audio', hovertext: 'pause recording'}
+        'playprompt': {buttontext: null, buttonclass: 'play-audio', hovertext: 'play prompt recording'},
+        'pauseprompt': {buttontext: null, buttonclass: 'pause-audio', hovertext: 'pause prompt recording'},
+        'play': {buttontext: null, buttonclass: 'play-audio', hovertext: 'play response recording'},
+        'pause': {buttontext: null, buttonclass: 'pause-audio', hovertext: 'pause response recording'}
       },
       recordinginprogress: -1,
       tabindex: 100
@@ -163,7 +165,8 @@ class AudioQueryResponsePackage {
     this._addTabIndex(playbutton);
     this._settings.playcontrols.push(playbutton);
     
-    var deletebutton = CreateElement.createIcon(this._numberElementId('btnDelete', index), this._DELETE_ICON, 'delete recording', e => this._deleteButtonHandler(e.target));
+    var title = 'delete recording #' + (index + 1);
+    var deletebutton = CreateElement.createIcon(this._numberElementId('btnDelete', index), this._DELETE_ICON, title, e => this._deleteButtonHandler(e.target));
     container.appendChild(deletebutton);
     this._addTabIndex(deletebutton);
     this._settings.deletecontrols.push(deletebutton);
@@ -218,17 +221,11 @@ class AudioQueryResponsePackage {
       }
     }
     
+    var elemNumber = this._getElementNumber(elemTarget);
     var buttonText = this._settings.recordbuttonstyling[stageName].buttontext;
     var buttonClass = this._settings.recordbuttonstyling[stageName].buttonclass;
-    var buttonHoverText = this._settings.recordbuttonstyling[stageName].hovertext;
+    var buttonHoverText = this._settings.recordbuttonstyling[stageName].hovertext + ' #' + (elemNumber + 1);
 
-    elemTarget.innerHTML = buttonText;
-    elemTarget.title = buttonHoverText;
-
-    var buttonText = this._settings.recordbuttonstyling[stageName].buttontext;
-    var buttonClass = this._settings.recordbuttonstyling[stageName].buttonclass;
-    var buttonHoverText = this._settings.recordbuttonstyling[stageName].hovertext;
-    
     elemTarget.innerHTML = buttonText;
     elemTarget.title = buttonHoverText;
 
@@ -246,6 +243,7 @@ class AudioQueryResponsePackage {
   }
     
   _setPlayButtonStyling(elemTarget, stageName) {
+    var elemNumber = this._getElementNumber(elemTarget);
     var playButtons = this._settings.playcontrols;
     var deleteButtons = this._settings.deletecontrols;
 
@@ -264,7 +262,7 @@ class AudioQueryResponsePackage {
     
     var buttonText = this._settings.playbuttonstyling[stageName].buttontext;
     var buttonClass = this._settings.playbuttonstyling[stageName].buttonclass;
-    var buttonHoverText = this._settings.playbuttonstyling[stageName].hovertext;
+    var buttonHoverText = this._settings.playbuttonstyling[stageName].hovertext + ' #' + (elemNumber + 1);
     
     elemTarget.innerHTML = buttonText;
     elemTarget.title = buttonHoverText;
@@ -276,9 +274,10 @@ class AudioQueryResponsePackage {
   }
   
   _setPromptPlayButtonStyling(elemTarget, stageName) {
-    var buttonText = this._settings.playbuttonstyling[stageName].buttontext;
-    var buttonClass = this._settings.playbuttonstyling[stageName].buttonclass;
-    var buttonHoverText = this._settings.playbuttonstyling[stageName].hovertext;
+    var elemNumber = this._getElementNumber(elemTarget);
+    var buttonText = this._settings.playbuttonstyling[stageName+'prompt'].buttontext;
+    var buttonClass = this._settings.playbuttonstyling[stageName+'prompt'].buttonclass;
+    var buttonHoverText = this._settings.playbuttonstyling[stageName+'prompt'].hovertext + ' #' + (elemNumber + 1);
 
     elemTarget.innerHTML = buttonText;
     elemTarget.title = buttonHoverText;
@@ -382,9 +381,9 @@ class AudioQueryResponsePackage {
   }
 
   _redoRecording(elemTarget) {
-    var prompt = 'There is already a recording for this item.\nClick "OK" if you would like to make a new one';
+    var elemNumber = this._getElementNumber(elemTarget);
+    var prompt = 'There is already a recording for response #' + (elemNumber + 1) + '.\nClick "OK" if you would like to make a new one';
     if (confirm(prompt)) {
-      var elemNumber = this._getElementNumber(elemTarget);
       var deletebutton = this._settings.deletecontrols[elemNumber];
       var playbutton = this._settings.playcontrols[elemNumber];
       
@@ -396,9 +395,9 @@ class AudioQueryResponsePackage {
   }
 
   _deleteRecordingOnConfirm(elemTarget) {
-    var prompt = 'Are you sure you want to delete this recording?\nClick "OK" to confirm the deletion';
+    var elemNumber = this._getElementNumber(elemTarget);
+    var prompt = 'Are you sure you want to delete response recording #' + (elemNumber + 1) + '?\nClick "OK" to confirm the deletion';
     if (confirm(prompt)) {
-      var elemNumber = this._getElementNumber(elemTarget);
       this._settings.mp3blobs[elemNumber] = null;
       this._setRecordButtonStyling(this._settings.recordcontrols[elemNumber], 'start');
       this._setPlayButtonStyling(this._settings.playcontrols[elemNumber], 'play');
