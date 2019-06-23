@@ -127,6 +127,7 @@ class AudioQueryResponsePackage {
 
       var playbutton = CreateElement.createIcon(this._numberElementId('btnPlayPrompt', index), this._PLAYPROMPT_ICON, null, e => this._playPromptButtonHandler(e.target));
       container.appendChild(playbutton);
+      playbutton.addEventListener('keyup', e => this._iconKeyUpHandler(e), false);
       this._addTabIndex(playbutton);
       this._setPromptPlayButtonStyling(playbutton, 'play');
      
@@ -147,6 +148,7 @@ class AudioQueryResponsePackage {
     
     var recordbutton = CreateElement.createIcon(this._numberElementId('btnRecording', index), this._RECORD_ICON, null, e => this._recordButtonHandler(e.target));
     container.appendChild(recordbutton);
+    recordbutton.addEventListener('keyup', e => this._iconKeyUpHandler(e), false);
     this._addTabIndex(recordbutton);
     this._settings.recordcontrols.push(recordbutton);
     this._setRecordButtonStyling(recordbutton, 'start');
@@ -162,12 +164,14 @@ class AudioQueryResponsePackage {
 
     var playbutton = CreateElement.createIcon(this._numberElementId('btnPlay', index), this._PLAY_ICON, null, e => this._playButtonHandler(e.target));
     container.appendChild(playbutton);
+    playbutton.addEventListener('keyup', e => this._iconKeyUpHandler(e), false);
     this._addTabIndex(playbutton);
     this._settings.playcontrols.push(playbutton);
     
     var title = 'delete recording #' + (index + 1);
     var deletebutton = CreateElement.createIcon(this._numberElementId('btnDelete', index), this._DELETE_ICON, title, e => this._deleteButtonHandler(e.target));
     container.appendChild(deletebutton);
+    deletebutton.addEventListener('keyup', e => this._iconKeyUpHandler(e), false);
     this._addTabIndex(deletebutton);
     this._settings.deletecontrols.push(deletebutton);
     
@@ -181,7 +185,8 @@ class AudioQueryResponsePackage {
     
     var buttontitle = 'download recordings in a ZIP file';
     var packagebutton = CreateElement.createIcon(null, this._DOWNLOAD_ICON, buttontitle, e => this._packageButtonHandler(e.target));
-    container.appendChild(packagebutton)
+    container.appendChild(packagebutton);
+    packagebutton.addEventListener('keyup', e => this._iconKeyUpHandler(e), false);
     this._addTabIndex(packagebutton);
     this._packagebutton = packagebutton;
 
@@ -558,6 +563,13 @@ class AudioQueryResponsePackage {
   _audioEndedHandler(elemTarget) {
     if (elemTarget.disabled) return;
     this._audioEnded(elemTarget);
+  }
+  
+  _iconKeyUpHandler(e) {
+    if (e.code == 'Space') {
+      e.stopPropagation();
+      e.target.click();
+    }
   }
   
   //---------------------------------------
