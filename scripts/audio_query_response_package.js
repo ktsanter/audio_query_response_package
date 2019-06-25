@@ -2,6 +2,7 @@
 // audio query/response package tool
 //-------------------------------------------------------------------
 // TODO: playback for single file?  <i class="far fa-comment-alt"></i>
+// TODO: test separately for microphone and speakers
 //-------------------------------------------------------------------
 
 class AudioQueryResponsePackage {

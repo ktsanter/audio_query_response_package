@@ -5,6 +5,7 @@ define(function (require) {
   require('standard_notice');
   require('markdowntohtml');
   require('create_element');
+  require('crunker');
   
   document.addEventListener('DOMContentLoaded', app.init());
 });
