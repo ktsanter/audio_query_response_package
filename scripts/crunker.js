@@ -1,7 +1,7 @@
 "use strict";
 
 class Crunker {
-  constructor({ sampleRate = 44100 } = {}) {
+  constructor({ sampleRate = 48000 } = {}) {
     this._sampleRate = sampleRate;
     this._context = this._createContext();
   }

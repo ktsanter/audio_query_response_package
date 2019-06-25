@@ -536,6 +536,7 @@ class AudioQueryResponsePackage {
     var elemLoadingMessage = document.getElementById('packageControlLabel');
     var origMessage = elemLoadingMessage.innerHTML;
     elemLoadingMessage.innerHTML = '<em>creating download...</em>';
+    elemLoadingMessage.appendChild(CreateElement.createIcon('noticeSpinner', 'fa fa-spinner fa-pulse fa-3x fa-fw"'));
     
     var buffers = [];
     var arrPromptFile64 = await this._getPromptAudioData();
@@ -545,6 +546,7 @@ class AudioQueryResponsePackage {
       if (promptFile64 != this._NO_VALUE) {
         var responseBuffer = this._base64ToArrayBuffer(promptFile64);
         var decoded = await context.decodeAudioData(responseBuffer)
+        if (i == 0) console.log(decoded);
         buffers.push(decoded);
       }
       
@@ -552,7 +554,7 @@ class AudioQueryResponsePackage {
       buffers.push(await context.decodeAudioData(responseBuffer));
     }
     
-    this._doCrunker(buffers);
+    this._concatenateAudio(buffers);
     
     elemLoadingMessage.innerHTML = origMessage;
   }
@@ -587,7 +589,6 @@ class AudioQueryResponsePackage {
   }
   
   _base64ToArrayBuffer(base64) {
-    console.log(base64);
     var binary_string =  window.atob(base64);
     var len = binary_string.length;
     var bytes = new Uint8Array( len );
@@ -609,7 +610,7 @@ class AudioQueryResponsePackage {
     })
   }
    
-  _doCrunker(buffers) {
+  _concatenateAudio(buffers) {
     let audio = new Crunker();
     
     var concatenated = audio.concatAudio(buffers);
