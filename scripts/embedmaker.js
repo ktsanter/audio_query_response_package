@@ -6,7 +6,7 @@
 //-----------------------------------------------------------------------------------
 
 const app = function () {
-  const appversion = '0.02';
+  const appversion = '1.01';
   const appname = 'Audio query/response package embed maker';
 	const page = {};
   const settings = {};
@@ -143,6 +143,8 @@ const app = function () {
         var innerContainer = CreateElement.createDiv('innerPreviewContainer', null);
         container.appendChild(innerContainer);
         
+        var config = requestResult.data;
+        config.openInFullWindowCallback = _fullWindowCallback;
         page.aqrp = new AudioQueryResponsePackage(requestResult.data);
         innerContainer.appendChild(await page.aqrp.render());
         innerContainer.style.width = widthpercent + '%';
@@ -185,7 +187,12 @@ const app = function () {
     document.getElementById('iconEmbedLeft').style.display = display;
     document.getElementById('iconEmbedRight').style.display = display;
   }
-              
+  
+  function _fullWindowCallback() {
+    var url = _makeURL();
+    window.open(url, '_blank');
+  }
+  
 	//------------------------------------------------------------------
 	// data processing
 	//------------------------------------------------------------------      
@@ -234,9 +241,14 @@ const app = function () {
   function _getIdFromLink(strLink) {
     var id = '';
     
-    var splitId = strLink.match(/\?id=([a-zA-Z0-9-_]+)/);
+    var splitId = strLink.match(/\?id=([a-zA-Z0-9-_]+)/);  // match ?id=xxxxx
+    
+    if (splitId == null) {
+      splitId = strLink.match(/\/([a-zA-Z0-9-_]+)\/edit/); // match /xxxxxxx/edit
+    }
+    
     if (splitId != null) {
-      id = splitId[0].slice(4);
+      id = splitId[1];
     }
     
     return id;

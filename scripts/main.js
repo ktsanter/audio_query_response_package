@@ -10,6 +10,8 @@ const app = function () {
     apikey: 'MVaudioqueryresponseAPI'
   };
   
+  const baseURLforPacingInfo = 'https://ktsanter.github.io/audio_query_response_package/index.html';
+
 	const page = {};
 	const settings = {};
   
@@ -39,7 +41,9 @@ const app = function () {
       var requestResult = await googleSheetWebAPI.webAppGet(apiInfo, 'config', {sourcefileid: settings.sourcefileid}, page.notice);
       if (requestResult.success) {
         page.notice.setNotice('');
-        _renderPage(requestResult.data);
+        var config = requestResult.data;
+        config.openInFullWindowCallback = _fullWindowCallback;
+        _renderPage(config);
       } 
 		}
 	}
@@ -81,6 +85,22 @@ const app = function () {
     page.body.append(await page.aqrp.render());
   }
   
+  function _fullWindowCallback() {
+    var url = _makeURL();
+    window.open(url, '_blank');
+  }
+  
+  function _makeURL() {
+    var slideslink = settings.sourcefilelink;
+    var instance = settings.instance;
+    
+    var url = baseURLforPacingInfo;
+    url += '?instance=' + instance;
+    url += '&sourcefilelink=' + slideslink;
+
+    return url;
+  }
+
   //---------------------------------------
 	// return from wrapper function
 	//----------------------------------------

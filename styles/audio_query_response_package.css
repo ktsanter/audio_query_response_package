@@ -11,6 +11,11 @@
   font-weight: bold;
 }
 
+.fullwindow-control {
+  float: right;
+  padding-top: 0.2em;
+}
+
 .arp-instructions {
   margin-top: 4px;
   margin-bottom: 6px;
@@ -66,16 +71,19 @@
 .redo-recording {}
 
 .package-control {
-  /*background-color: #3ad637;*/
   display: inline-block;
 }
 
 .package-control-disabled {
-  /*
-  background-color: #ccc;
-  cursor: not-allowed;
-  */
   display: none;
+}
+
+#packageControlLabel {
+  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+  font-size: 0.6em;
+  display: inline-block;
+  vertical-align: middle;
+  padding-left: 0.2em;
 }
 
 /*-- standard error and notice tools --*/

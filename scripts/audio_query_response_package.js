@@ -1,13 +1,13 @@
 //-------------------------------------------------------------------
 // audio query/response package tool
 //-------------------------------------------------------------------
-// TODO:
+// TODO: playback for single file?  <i class="far fa-comment-alt"></i>
 //-------------------------------------------------------------------
 
 class AudioQueryResponsePackage {
   constructor (config) {
     this._config = config;
-    
+        
     this._AUDIO_MIMETYPE = 'audio/webm';
     this._AUDIO_FILETYPE_EXTENSION_FIREFOX = '.ogg';
     this._AUDIO_FILETYPE_EXTENSION_CHROME = '.webm';
@@ -21,7 +21,6 @@ class AudioQueryResponsePackage {
     this._RECORD_ICON = 'record-control fas fa-microphone';
     this._NO_RECORD_ICON = 'record-control fas fa-microphone-slash';
     this._STOP_RECORD_ICON = 'record-control far fa-stop-circle';
-    this._STOP_SYMBOL = '⏹️';
     
     this._DELETE_ICON = 'delete-control far fa-trash-alt';
     this._DOWNLOAD_ICON = 'package-control far fa-arrow-alt-circle-down';
@@ -82,6 +81,7 @@ class AudioQueryResponsePackage {
   
   _renderTitle(title) {
     var container = CreateElement.createDiv(null, 'arp-title', title);
+    container.appendChild(CreateElement.createIcon(null, 'fullwindow-control fas fa-external-link-alt', 'open in full window', e => this._openInFullWindow()));
     return container;
   }
 
@@ -183,13 +183,17 @@ class AudioQueryResponsePackage {
   _createPackageControl() {
     var container = CreateElement.createDiv(null, null);
     
-    var buttontitle = 'download recordings in a ZIP file';
+    var buttontitle = 'download recorded conversation';
     var packagebutton = CreateElement.createIcon(null, this._DOWNLOAD_ICON, buttontitle, e => this._packageButtonHandler(e.target));
     container.appendChild(packagebutton);
     packagebutton.addEventListener('keyup', e => this._iconKeyUpHandler(e), false);
+    var downloadinstructions = this._config.downloadinstructions;
+    if (downloadinstructions == '[none]') downloadinstructions = '';
+    packagebutton.appendChild(CreateElement.createDiv('packageControlLabel', null, downloadinstructions));
     this._addTabIndex(packagebutton);
     this._packagebutton = packagebutton;
 
+/*-- not needed with single file download --
     // hidden link to trigger ZIP and download
     var downloadlink = CreateElement.createLink(null, null);
     container.appendChild(downloadlink);
@@ -198,6 +202,7 @@ class AudioQueryResponsePackage {
     downloadlink.href = '';
     downloadlink.style.display = 'none';    
     this._downloadelement = downloadlink;
+-------------------------------------------*/
   
    return container;
   }
@@ -493,6 +498,9 @@ class AudioQueryResponsePackage {
 	//------------------------------------------------------------------
 	// package and download recordings
 	//------------------------------------------------------------------
+  
+  // original version with separate files packaged and downloaded as a ZIP
+  /*
   _packageAudioRecordings() {
     var zip = new JSZip();
     var currDate = new Date();
@@ -515,7 +523,56 @@ class AudioQueryResponsePackage {
     .then (function(content) {
       downloadelement.href = URL.createObjectURL(content);
       downloadelement.click();
-    });
+    });    
+  }
+  */
+
+  // create and download single MP3 file for entire dialog
+  async _packageAudioRecordings() {
+    var context = new AudioContext();
+    var promptItems = this._config.items;
+    
+    var buffers = [];
+    for (var i = 0; i < this._settings.mp3blobs.length; i++) {
+      var promptFile64 = promptItems[i].audiopromptFile64;
+      var responseBuffer = this._base64ToArrayBuffer(promptFile64);
+      var decoded = await context.decodeAudioData(responseBuffer)
+      buffers.push(decoded);
+      
+      var responseBuffer = await this._readFileAsync(this._settings.mp3blobs[i]);
+      buffers.push(await context.decodeAudioData(responseBuffer));
+    }
+    
+    this._doCrunker(buffers);
+  }
+
+  _base64ToArrayBuffer(base64) {
+    var binary_string =  window.atob(base64);
+    var len = binary_string.length;
+    var bytes = new Uint8Array( len );
+    for (var i = 0; i < len; i++)        {
+        bytes[i] = binary_string.charCodeAt(i);
+    }
+    return bytes.buffer;
+}      
+  _readFileAsync(file) {
+    return new Promise((resolve, reject) => {
+      let reader = new FileReader();
+
+      reader.onload = () => {
+        resolve(reader.result);
+      };
+      reader.onerror = reject;
+      reader.readAsArrayBuffer(file);
+    })
+  }
+   
+  _doCrunker(buffers) {
+    let audio = new Crunker();
+    
+    var concatenated = audio.concatAudio(buffers);
+    var output = audio.export(concatenated, "audio/mp3");
+    audio.download(output.blob, this._config.downloadfilename);
   }
   
   //------------------------------------------------------------------
@@ -570,6 +627,10 @@ class AudioQueryResponsePackage {
       e.stopPropagation();
       e.target.click();
     }
+  }
+  
+  _openInFullWindow() {
+    this._config.openInFullWindowCallback();
   }
   
   //---------------------------------------
