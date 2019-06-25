@@ -531,23 +531,63 @@ class AudioQueryResponsePackage {
   // create and download single MP3 file for entire dialog
   async _packageAudioRecordings() {
     var context = new AudioContext();
-    var promptItems = this._config.items;
+    var promptItems = this._config.items;    
+
+    var elemLoadingMessage = document.getElementById('packageControlLabel');
+    var origMessage = elemLoadingMessage.innerHTML;
+    elemLoadingMessage.innerHTML = '<em>creating download...</em>';
     
     var buffers = [];
+    var arrPromptFile64 = await this._getPromptAudioData();
+    
     for (var i = 0; i < this._settings.mp3blobs.length; i++) {
-      var promptFile64 = promptItems[i].audiopromptFile64;
-      var responseBuffer = this._base64ToArrayBuffer(promptFile64);
-      var decoded = await context.decodeAudioData(responseBuffer)
-      buffers.push(decoded);
+      var promptFile64 = arrPromptFile64[i];
+      if (promptFile64 != this._NO_VALUE) {
+        var responseBuffer = this._base64ToArrayBuffer(promptFile64);
+        var decoded = await context.decodeAudioData(responseBuffer)
+        buffers.push(decoded);
+      }
       
       var responseBuffer = await this._readFileAsync(this._settings.mp3blobs[i]);
       buffers.push(await context.decodeAudioData(responseBuffer));
     }
     
     this._doCrunker(buffers);
+    
+    elemLoadingMessage.innerHTML = origMessage;
   }
 
+  async _getPromptAudioData() {
+    var arrPromptFile64 = null;
+
+    const apiInfo = {
+      apibase: 'https://script.google.com/macros/s/AKfycbxV2GBJNOReNqHyaVSOgwPkANsjM3H8ZqdnJKNx0OZhCGraj5rO/exec',
+      apikey: 'MVaudioqueryresponseAPI'
+    };  
+    
+    var params = {};
+    for (var i = 0; i < this._config.items.length; i++) {
+      var tag = 'url' + (i + 1);
+      params[tag] = this._config.items[i].audioprompt;
+    }
+    
+    var requestResult = await googleSheetWebAPI.webAppGet(apiInfo, 'audiodata', params, this._notice);
+
+    if (requestResult.success) {
+      arrPromptFile64 = [];
+      for (var i = 0; i < this._config.items.length; i++) {
+        arrPromptFile64.push(requestResult.data[i].file64string);
+      }
+      
+    } else {
+      console.log('failed to retrieve audio prompt data');
+    }
+    
+    return arrPromptFile64;
+  }
+  
   _base64ToArrayBuffer(base64) {
+    console.log(base64);
     var binary_string =  window.atob(base64);
     var len = binary_string.length;
     var bytes = new Uint8Array( len );
@@ -555,7 +595,8 @@ class AudioQueryResponsePackage {
         bytes[i] = binary_string.charCodeAt(i);
     }
     return bytes.buffer;
-}      
+  }
+
   _readFileAsync(file) {
     return new Promise((resolve, reject) => {
       let reader = new FileReader();
